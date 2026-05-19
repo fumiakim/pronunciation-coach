@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pronunciation Coach — 英語発音矯正</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🎙️</span>
+      <div>
+        <h1>Pronunciation Coach</h1>
+        <p class="tagline">日本語話者のための英語発音矯正アプリ</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <label class="select-wrap">
+        <span>難易度</span>
+        <select id="levelSelect">
+          <option value="beginner">初級 (Beginner)</option>
+          <option value="intermediate" selected>中級 (Intermediate)</option>
+          <option value="advanced">上級 (Advanced)</option>
+          <option value="minimal-pairs">ミニマルペア</option>
+        </select>
+      </label>
+      <label class="select-wrap">
+        <span>音声速度</span>
+        <input type="range" id="rateSlider" min="0.5" max="1.2" step="0.05" value="0.9" />
+        <span class="rate-value" id="rateValue">0.90x</span>
+      </label>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Banner (Safari + file:// guidance, etc.) -->
+    <div class="banner hidden" id="banner">
+      <div class="banner-icon">⚠️</div>
+      <div class="banner-body">
+        <strong id="bannerTitle">お知らせ</strong>
+        <p id="bannerText"></p>
+        <div class="banner-actions hidden" id="bannerActions">
+          <button class="btn btn-primary btn-sm" id="enableWhisperBtn">
+            <span class="btn-icon">⬇</span><span>音声認識を有効化 (約40MB)</span>
+          </button>
+          <span class="banner-progress hidden" id="whisperProgress">
+            <span class="bar"><span class="fill" id="whisperFill"></span></span>
+            <span class="pct" id="whisperPct">0%</span>
+          </span>
+        </div>
+      </div>
+      <button class="banner-close" id="bannerClose" aria-label="閉じる">✕</button>
+    </div>
+
+    <!-- Practice Panel -->
+    <section class="card target-card">
+      <div class="card-head">
+        <h2>練習フレーズ</h2>
+        <div class="card-head-actions">
+          <button class="btn btn-ghost" id="prevBtn" title="前のフレーズ">◀</button>
+          <button class="btn btn-ghost" id="nextBtn" title="次のフレーズ">▶</button>
+          <button class="btn btn-ghost" id="shuffleBtn" title="シャッフル">🔀</button>
+        </div>
+      </div>
+
+      <div class="target-display">
+        <p class="target-sentence" id="targetSentence">Loading...</p>
+        <p class="target-translation" id="targetTranslation"></p>
+        <p class="target-hint" id="targetHint"></p>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-secondary" id="listenBtn">
+          <span class="btn-icon">🔊</span>
+          <span>お手本を聞く</span>
+        </button>
+        <button class="btn btn-primary" id="recordBtn">
+          <span class="btn-icon" id="recordIcon">🎤</span>
+          <span id="recordLabel">録音開始</span>
+        </button>
+        <button class="btn btn-ghost" id="customBtn">
+          <span class="btn-icon">✎</span>
+          <span>自由入力</span>
+        </button>
+      </div>
+
+      <div class="status-bar" id="statusBar">
+        マイクをオンにして、お手本通りに発音してみましょう。
+      </div>
+    </section>
+
+    <!-- Feedback Panel -->
+    <section class="card result-card" id="resultCard">
+      <div class="card-head">
+        <h2>判定結果</h2>
+        <div class="score-pill" id="scorePill">— / 100</div>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-block">
+          <h3>あなたの発音</h3>
+          <p class="heard-text" id="heardText">まだ録音されていません</p>
+          <div class="playback-row hidden" id="playbackRow">
+            <button class="btn btn-secondary btn-sm" id="playMyVoiceBtn">
+              <span class="btn-icon">▶</span><span>自分の声を聞く</span>
+            </button>
+            <button class="btn btn-ghost btn-sm" id="playModelBtn">
+              <span class="btn-icon">🔊</span><span>お手本と比較</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="result-block">
+          <h3>単語別フィードバック</h3>
+          <div class="word-diff" id="wordDiff">
+            <span class="muted">録音すると、ここに単語ごとの正誤が表示されます。</span>
+          </div>
+        </div>
+
+        <div class="result-block">
+          <h3>発音のヒント</h3>
+          <ul class="tips-list" id="tipsList">
+            <li class="muted">録音すると、苦手な音に対するアドバイスを表示します。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="card history-card">
+      <div class="card-head">
+        <h2>練習履歴</h2>
+        <button class="btn btn-ghost" id="clearHistoryBtn">クリア</button>
+      </div>
+      <ul class="history-list" id="historyList">
+        <li class="muted">録音を行うと、ここに履歴が追加されます。</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Custom phrase modal -->
+  <div class="modal-backdrop hidden" id="customModal">
+    <div class="modal">
+      <h2>自由入力</h2>
+      <p>練習したい英文を入力してください。</p>
+      <textarea id="customInput" rows="3" placeholder="e.g. I would like a cup of coffee, please."></textarea>
+      <input id="customTranslation" type="text" placeholder="日本語訳 (任意)" />
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="customCancel">キャンセル</button>
+        <button class="btn btn-primary" id="customApply">この文で練習</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>※ Chrome / Edge / Safari の最新版を推奨。マイクの使用許可が必要です。</p>
+  </footer>
+
+  <script src="phrases.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
