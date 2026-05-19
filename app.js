@@ -62,7 +62,195 @@
     playbackRow: $("playbackRow"),
     playMyVoice: $("playMyVoiceBtn"),
     playModel: $("playModelBtn"),
+    studyStrip: $("studyStrip"),
+    studyTodayPron: $("studyTodayPron"),
+    studyTodayShad: $("studyTodayShad"),
+    studyTodayTotal: $("studyTodayTotal"),
   };
+
+  // ----- Study time tracking -----
+  // shadowing-app と同じ命名規則を踏襲し、アプリ別に別キーで記録する。
+  //   pronunciation-time-YYYY-MM-DD : 本アプリの累積秒
+  //   shadowing-time-YYYY-MM-DD     : shadowing-app の累積秒
+  // 表示時に両方を読み込み合算する。
+  const PRON_PREFIX = "pronunciation-time-";
+  const SHAD_PREFIX = "shadowing-time-";
+  const TICK_EVENT = "pronunciation:tick";
+
+  function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+  function dayKey(prefix, date) {
+    const d = date || new Date();
+    return prefix + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  function getDaySeconds(prefix, date) {
+    try {
+      const v = localStorage.getItem(dayKey(prefix, date));
+      return v ? (parseInt(v, 10) || 0) : 0;
+    } catch (_) { return 0; }
+  }
+  function addPronSeconds(seconds) {
+    if (!isFinite(seconds) || seconds <= 0) return;
+    try {
+      const key = dayKey(PRON_PREFIX);
+      const cur = getDaySeconds(PRON_PREFIX);
+      const next = cur + Math.round(seconds);
+      localStorage.setItem(key, String(next));
+      window.dispatchEvent(new CustomEvent(TICK_EVENT, { detail: next }));
+    } catch (_) {}
+  }
+  function formatShort(seconds) {
+    const s = Math.max(0, Math.floor(seconds));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    if (h > 0) return h + ":" + pad2(m) + ":" + pad2(sec);
+    return m + ":" + pad2(sec);
+  }
+  function getLastNDays(n) {
+    const out = [];
+    const today = new Date();
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+      out.push({
+        date: d,
+        pron: getDaySeconds(PRON_PREFIX, d),
+        shad: getDaySeconds(SHAD_PREFIX, d),
+      });
+    }
+    return out;
+  }
+
+  // Tick: 録音/モデル再生/解析中だけ秒を加算
+  const activeSources = new Set();
+  let tickId = null;
+  function startTickIfNeeded() {
+    if (tickId == null && activeSources.size > 0) {
+      tickId = setInterval(() => { addPronSeconds(1); renderStudyTime(); }, 1000);
+    }
+  }
+  function stopTickIfIdle() {
+    if (tickId != null && activeSources.size === 0) {
+      clearInterval(tickId);
+      tickId = null;
+    }
+  }
+  function startTracking(key) { activeSources.add(key); startTickIfNeeded(); }
+  function stopTracking(key) { activeSources.delete(key); stopTickIfIdle(); }
+
+  function renderStudyTime() {
+    const days = getLastNDays(7);
+    let maxTotal = 0;
+    days.forEach((d) => { maxTotal = Math.max(maxTotal, d.pron + d.shad); });
+    const scaleMax = Math.max(maxTotal, 5 * 60); // 最低5分でスケール、過小な日でも見栄えを保つ
+
+    els.studyStrip.innerHTML = "";
+    const todayKey = dayKey(PRON_PREFIX); // 比較用
+    days.forEach((d, idx) => {
+      const isToday = idx === days.length - 1;
+      const total = d.pron + d.shad;
+      const pronH = scaleMax > 0 ? (d.pron / scaleMax) * 100 : 0;
+      const shadH = scaleMax > 0 ? (d.shad / scaleMax) * 100 : 0;
+      const wrap = document.createElement("div");
+      wrap.className = "study-day" + (isToday ? " today" : "");
+
+      const bar = document.createElement("div");
+      bar.className = "study-bar";
+      const pron = document.createElement("div");
+      pron.className = "study-bar-pron";
+      pron.style.height = pronH + "%";
+      const shad = document.createElement("div");
+      shad.className = "study-bar-shad";
+      shad.style.height = shadH + "%";
+      // 重なり順: 下に shad、上に pron
+      bar.appendChild(shad);
+      bar.appendChild(pron);
+
+      const dayLabel = document.createElement("div");
+      dayLabel.className = "study-day-label";
+      dayLabel.textContent = isToday ? "今日" : (d.date.getMonth() + 1) + "/" + d.date.getDate();
+      const timeLabel = document.createElement("div");
+      timeLabel.className = "study-day-time";
+      timeLabel.textContent = total > 0 ? formatShort(total) : "—";
+
+      bar.title = d.date.toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" }) +
+        " — 発音 " + formatShort(d.pron) + " + シャドーイング " + formatShort(d.shad) +
+        " = " + formatShort(total);
+
+      wrap.appendChild(bar);
+      wrap.appendChild(dayLabel);
+      wrap.appendChild(timeLabel);
+      els.studyStrip.appendChild(wrap);
+    });
+
+    const todayPron = getDaySeconds(PRON_PREFIX);
+    const todayShad = getDaySeconds(SHAD_PREFIX);
+    els.studyTodayPron.textContent = "発音 " + formatShort(todayPron);
+    els.studyTodayShad.textContent = "シャドーイング " + formatShort(todayShad);
+    els.studyTodayTotal.textContent = "合計 " + formatShort(todayPron + todayShad);
+  }
+
+  // 他タブ・他アプリ (同一オリジン) からの更新でも再描画
+  window.addEventListener("storage", (e) => {
+    if (!e.key) return;
+    if (e.key.startsWith(PRON_PREFIX) || e.key.startsWith(SHAD_PREFIX)) renderStudyTime();
+  });
+
+  // ----- Cross-origin sync -----
+  // 本アプリが fumiakim.github.io 以外 (localhost / file://) で動いているとき、
+  // github.io の正本ストレージにミラーすることで shadowing-app と合算可能にする。
+  const CANONICAL_ORIGIN = "https://fumiakim.github.io";
+  const isCanonical = window.location.origin === CANONICAL_ORIGIN;
+  let bridge = null;
+  let bridgeMirroredDelta = 0;
+
+  async function initBridge() {
+    if (isCanonical) return; // 同一オリジン: localStorage が正本のためブリッジ不要
+    if (!window.StudySync) return;
+    try {
+      bridge = window.StudySync.create({
+        bridge: CANONICAL_ORIGIN + "/pronunciation-coach/sync.html",
+      });
+      await bridge.ready();
+      await refreshFromBridge();
+      // 録音/再生の都度ブリッジへも反映
+      window.addEventListener(TICK_EVENT, mirrorTickToBridge);
+    } catch (e) {
+      console.warn("[study-sync] bridge unavailable:", e.message || e);
+      bridge = null;
+    }
+  }
+
+  function mirrorTickToBridge() {
+    if (!bridge) return;
+    bridgeMirroredDelta += 1;
+    // 1秒ごとに送ると重いので 5秒バッチで送信
+    if (bridgeMirroredDelta >= 5) {
+      const n = bridgeMirroredDelta;
+      bridgeMirroredDelta = 0;
+      bridge.add("pronunciation", n).catch(() => {});
+    }
+  }
+
+  async function refreshFromBridge() {
+    if (!bridge) return;
+    try {
+      const days = await bridge.getRange(7);
+      // ブリッジから返ったデータを localStorage にミラー (上書き)
+      // ただし localStorage の値がブリッジより大きい場合は localStorage を優先
+      // (まだ送信されていない差分が残っている可能性があるため)
+      days.forEach((d) => {
+        const localPron = getDaySeconds(PRON_PREFIX, new Date(d.date));
+        const localShad = getDaySeconds(SHAD_PREFIX, new Date(d.date));
+        const mergedPron = Math.max(localPron, d.pron);
+        const mergedShad = Math.max(localShad, d.shad);
+        if (mergedPron !== localPron) localStorage.setItem(PRON_PREFIX + d.date, String(mergedPron));
+        if (mergedShad !== localShad) localStorage.setItem(SHAD_PREFIX + d.date, String(mergedShad));
+      });
+      renderStudyTime();
+    } catch (e) {
+      console.warn("[study-sync] refresh failed:", e);
+    }
+  }
 
   // ----- Whisper (transformers.js) — Safariなど SR が使えない環境向けフォールバック -----
   const whisper = {
@@ -313,6 +501,9 @@
     const enVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
     const preferred = enVoices.find((v) => /Google|Samantha|Natural|Microsoft/i.test(v.name));
     utter.voice = preferred || enVoices[0] || null;
+    utter.onstart = () => startTracking("tts");
+    utter.onend = () => stopTracking("tts");
+    utter.onerror = () => stopTracking("tts");
     window.speechSynthesis.speak(utter);
   }
 
@@ -606,6 +797,7 @@
     }
 
     state.isRecording = true;
+    startTracking("rec");
     els.record.classList.add("is-recording");
     els.recordIcon.textContent = "⏹";
     els.recordLabel.textContent = "停止";
@@ -622,6 +814,7 @@
       try { recognition.stop(); } catch (_) {}
     }
     stopMediaRecording();
+    stopTracking("rec");
   }
 
   function onResult(event) {
@@ -658,12 +851,14 @@
 
   function onEnd() {
     state.isRecording = false;
+    stopTracking("rec");
     els.record.classList.remove("is-recording");
     els.recordIcon.textContent = "🎤";
     els.recordLabel.textContent = "録音開始";
   }
 
   function onError(e) {
+    stopTracking("rec");
     // MediaRecorder 側は別経路。SR だけ失敗した場合は録音は継続/完了し、
     // finalizeAudio() の方で「認識は使えなかった」フォールバック表示を行う。
     if (e.error === "not-allowed" || e.error === "service-not-allowed") {
@@ -817,7 +1012,9 @@
     }
     loadHistory();
     renderHistory();
+    renderStudyTime();
     setLevel(state.level);
+    initBridge();
   }
 
   init();

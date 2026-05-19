@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="robots" content="noindex" />
+<title>Study Time Sync Bridge</title>
+<style>
+  body { font-family: system-ui, sans-serif; padding: 20px; color: #555; }
+  code { background: #f3f3f3; padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Study Time Sync Bridge</h1>
+<p>This page is an invisible postMessage bridge that lets sibling apps
+(<code>shadowing-app</code>, <code>pronunciation-coach</code>) share daily study time
+through the <code>fumiakim.github.io</code> origin's localStorage.</p>
+<p>It is meant to be embedded as a hidden iframe; it is not interactive on its own.</p>
+
+<script>
+(() => {
+  "use strict";
+
+  const PRON_PREFIX = "pronunciation-time-";
+  const SHAD_PREFIX = "shadowing-time-";
+
+  // 許可するオリジン (Postリクエストはここからのみ受け付ける)
+  const ORIGIN_ALLOW = [
+    /^https:\/\/fumiakim\.github\.io$/,
+    /^https?:\/\/localhost(:\d+)?$/,
+    /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+    /^https:\/\/[a-z0-9-]+\.vercel\.app$/,
+  ];
+
+  function originAllowed(origin) {
+    if (!origin) return false;
+    return ORIGIN_ALLOW.some((re) => re.test(origin));
+  }
+
+  function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+  function dayKeyFromString(prefix, dateStr) {
+    return prefix + dateStr;
+  }
+  function dayKey(prefix, d) {
+    d = d || new Date();
+    return prefix + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  function getSeconds(prefix, dateStr) {
+    try {
+      const v = localStorage.getItem(prefix + dateStr);
+      return v ? (parseInt(v, 10) || 0) : 0;
+    } catch (_) { return 0; }
+  }
+  function setSeconds(prefix, dateStr, value) {
+    try {
+      localStorage.setItem(prefix + dateStr, String(Math.max(0, Math.round(value))));
+    } catch (_) {}
+  }
+
+  function handle(msg) {
+    const { cmd } = msg || {};
+    if (cmd === "ping") {
+      return { ok: true, role: "study-sync", version: 1 };
+    }
+    if (cmd === "add") {
+      const app = msg.app === "shadowing" ? "shadowing" : "pronunciation";
+      const seconds = Number(msg.seconds);
+      if (!isFinite(seconds) || seconds <= 0) return { ok: false, error: "invalid_seconds" };
+      const prefix = app === "shadowing" ? SHAD_PREFIX : PRON_PREFIX;
+      const date = msg.date || todayStr();
+      const cur = getSeconds(prefix, date);
+      const next = cur + Math.round(seconds);
+      setSeconds(prefix, date, next);
+      return { ok: true, app, date, seconds: next };
+    }
+    if (cmd === "getDay") {
+      const date = msg.date || todayStr();
+      return {
+        ok: true,
+        date,
+        pron: getSeconds(PRON_PREFIX, date),
+        shad: getSeconds(SHAD_PREFIX, date),
+      };
+    }
+    if (cmd === "getRange") {
+      const days = Math.max(1, Math.min(366, Number(msg.days) || 7));
+      const out = [];
+      const today = new Date();
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+        const ds = d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+        out.push({
+          date: ds,
+          pron: getSeconds(PRON_PREFIX, ds),
+          shad: getSeconds(SHAD_PREFIX, ds),
+        });
+      }
+      return { ok: true, days: out };
+    }
+    return { ok: false, error: "unknown_cmd" };
+  }
+
+  window.addEventListener("message", (event) => {
+    if (!originAllowed(event.origin)) return;
+    const data = event.data;
+    if (!data || typeof data !== "object" || data.target !== "study-sync") return;
+    const id = data.id;
+    let response;
+    try {
+      response = handle(data);
+    } catch (e) {
+      response = { ok: false, error: (e && e.message) || "exception" };
+    }
+    response.id = id;
+    response.target = "study-sync-reply";
+    event.source.postMessage(response, event.origin);
+  });
+
+  // 親オリジンに「準備完了」を通知
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ target: "study-sync-reply", ready: true, version: 1 }, "*");
+    } catch (_) {}
+  }
+})();
+</script>
+</body>
+</html>
