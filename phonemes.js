@@ -126,6 +126,57 @@
     return out;
   }
 
+  // 強勢情報を保持したまま phones 配列を返す (reference-contour 用)
+  const ARPA_VOWELS = new Set([
+    "AA","AE","AH","AO","AW","AY","EH","ER","EY","IH","IY","OW","OY","UH","UW",
+  ]);
+  const VOWEL_IPA = new Set([
+    "ɑ","æ","ʌ","ə","ɔ","aʊ","aɪ","ɛ","ɝ","ɚ","eɪ","ɪ","iː","oʊ","ɔɪ","ʊ","uː",
+  ]);
+
+  function arpabetToPhonesWithStress(arpa) {
+    return arpa
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((seg) => {
+        const m = seg.match(/^([A-Z]+)(\d?)$/);
+        if (!m) return null;
+        const base = m[1], stress = m[2] || "";
+        let ipa;
+        if (base === "AH") ipa = (stress === "1" || stress === "2") ? "ʌ" : "ə";
+        else if (base === "ER") ipa = (stress === "1" || stress === "2") ? "ɝ" : "ɚ";
+        else ipa = ARPA_TO_IPA[base] || null;
+        if (!ipa) return null;
+        return { ipa, stress, isVowel: ARPA_VOWELS.has(base) };
+      })
+      .filter(Boolean);
+  }
+
+  async function wordsWithStress(text) {
+    await ensureConverter();
+    const words = text.match(/[A-Za-z']+/g) || [];
+    const out = [];
+    for (const w of words) {
+      const arpa = lookupArpabet(w);
+      if (arpa) {
+        out.push({ word: w.toLowerCase(), phones: arpabetToPhonesWithStress(arpa) });
+      } else {
+        // 未知語: G2P 推定。強勢は最初の母音に1、それ以外は0と仮定
+        const tokens = guessG2P(w);
+        let stressedSet = false;
+        const phones = tokens.map((t) => {
+          const isV = VOWEL_IPA.has(t);
+          let stress = "";
+          if (isV && !stressedSet) { stress = "1"; stressedSet = true; }
+          else if (isV) stress = "0";
+          return { ipa: t, stress, isVowel: isV };
+        });
+        out.push({ word: w.toLowerCase(), phones });
+      }
+    }
+    return out;
+  }
+
   // ----- Needleman-Wunsch alignment -----
   function alignPhonemes(refs, hyps) {
     const m = refs.length, n = hyps.length;
@@ -247,6 +298,7 @@
   window.Phonemes = {
     ensureConverter,
     wordsToPhonemes,
+    wordsWithStress,
     alignPhonemes,
     diagnose,
     gopScores,

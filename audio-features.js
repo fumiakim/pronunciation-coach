@@ -133,6 +133,7 @@
     fitCanvas(canvas);
     const ctx = canvas.getContext("2d");
     const W = canvas.width, H = canvas.height;
+    const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, W, H);
 
     // 背景グリッド
@@ -143,10 +144,12 @@
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
     }
 
-    const valid = values.filter((v) => v > 0);
+    const ref = Array.isArray(opts.reference) ? opts.reference : null;
+    const combined = ref ? values.concat(ref) : values;
+    const valid = combined.filter((v) => v > 0);
     if (valid.length === 0) {
       ctx.fillStyle = "rgba(255,255,255,0.45)";
-      ctx.font = (12 * (canvas.width / Math.max(1, canvas.getBoundingClientRect().width))) + "px system-ui";
+      ctx.font = (12 * dpr) + "px system-ui";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(opts.emptyLabel || "(データなし)", W / 2, H / 2);
@@ -157,46 +160,68 @@
     const maxV = opts.max != null ? opts.max : Math.max(...valid);
     const span = Math.max(1e-6, maxV - minV);
 
-    // 帯塗り
-    ctx.fillStyle = opts.fill || "rgba(124, 92, 255, 0.20)";
-    ctx.beginPath();
-    let started = false;
-    values.forEach((v, i) => {
-      const x = (i / (values.length - 1 || 1)) * W;
-      const norm = v > 0 ? (v - minV) / span : 0;
-      const y = H - norm * H * 0.85 - H * 0.08;
-      if (v > 0) {
-        if (!started) { ctx.moveTo(x, H); ctx.lineTo(x, y); started = true; }
-        else ctx.lineTo(x, y);
-      } else if (started) {
-        ctx.lineTo(x, H); started = false;
+    function plotLine(arr, lineOpts) {
+      const N = arr.length;
+      if (lineOpts.fill) {
+        ctx.fillStyle = lineOpts.fill;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < N; i++) {
+          const v = arr[i];
+          const x = (i / (N - 1 || 1)) * W;
+          const norm = v > 0 ? (v - minV) / span : 0;
+          const y = H - norm * H * 0.85 - H * 0.08;
+          if (v > 0) {
+            if (!started) { ctx.moveTo(x, H); ctx.lineTo(x, y); started = true; }
+            else ctx.lineTo(x, y);
+          } else if (started) {
+            ctx.lineTo(x, H); started = false;
+          }
+        }
+        if (started) ctx.lineTo(W, H);
+        ctx.closePath();
+        ctx.fill();
       }
-    });
-    if (started) ctx.lineTo(W, H);
-    ctx.closePath();
-    ctx.fill();
 
-    // 折れ線
-    ctx.strokeStyle = opts.stroke || "#7c5cff";
-    ctx.lineWidth = 2 * (window.devicePixelRatio || 1) * 0.6;
-    ctx.beginPath();
-    let drawing = false;
-    values.forEach((v, i) => {
-      const x = (i / (values.length - 1 || 1)) * W;
-      const norm = v > 0 ? (v - minV) / span : 0;
-      const y = H - norm * H * 0.85 - H * 0.08;
-      if (v > 0) {
-        if (!drawing) { ctx.moveTo(x, y); drawing = true; }
-        else ctx.lineTo(x, y);
-      } else {
-        drawing = false;
+      ctx.strokeStyle = lineOpts.stroke;
+      ctx.lineWidth = lineOpts.lineWidth || 2 * dpr * 0.6;
+      ctx.setLineDash(lineOpts.dash || []);
+      ctx.beginPath();
+      let drawing = false;
+      for (let i = 0; i < N; i++) {
+        const v = arr[i];
+        const x = (i / (N - 1 || 1)) * W;
+        const norm = v > 0 ? (v - minV) / span : 0;
+        const y = H - norm * H * 0.85 - H * 0.08;
+        if (v > 0) {
+          if (!drawing) { ctx.moveTo(x, y); drawing = true; }
+          else ctx.lineTo(x, y);
+        } else {
+          drawing = false;
+        }
       }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // 参照カーブを背景に
+    if (ref) {
+      plotLine(ref, {
+        stroke: opts.referenceStroke || "rgba(255,255,255,0.55)",
+        lineWidth: 1.5 * dpr,
+        dash: [6 * dpr, 4 * dpr],
+      });
+    }
+
+    // ユーザー曲線を上に
+    plotLine(values, {
+      fill: opts.fill,
+      stroke: opts.stroke || "#7c5cff",
+      lineWidth: 2 * dpr * 0.7,
     });
-    ctx.stroke();
 
     // Y軸ラベル
     if (opts.unit) {
-      const dpr = window.devicePixelRatio || 1;
       ctx.fillStyle = "rgba(255,255,255,0.55)";
       ctx.font = (10 * dpr) + "px system-ui";
       ctx.textAlign = "right";

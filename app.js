@@ -920,7 +920,7 @@
     els.analysisCard.classList.remove("hidden");
   }
 
-  function renderAudioAnalysis(features) {
+  async function renderAudioAnalysis(features) {
     showAnalysisCard();
     const summary = window.AudioFeatures.summarize(features);
 
@@ -930,7 +930,6 @@
     if (summary.meanPitch > 0) meta.push(`<span class="pill">平均ピッチ ${summary.meanPitch}Hz</span>`);
     if (summary.pitchRange > 0) meta.push(`<span class="pill">ピッチ幅 ${summary.pitchRange}Hz</span>`);
     if (summary.sylPerSec > 0) meta.push(`<span class="pill">発話速度 ${summary.sylPerSec} 音節/秒</span>`);
-    // 既存の GOP ピル (phoneme 側で追加されていれば) を保持
     const prev = els.analysisMeta.innerHTML;
     const gopMatch = prev.match(/<span class="pill">GOP[^<]*<\/span>/);
     els.analysisMeta.innerHTML = meta.join("") + (gopMatch ? gopMatch[0] : "");
@@ -941,16 +940,37 @@
     els.energySub.textContent =
       `平均 ${summary.energyMean} / 最大 ${summary.energyMax}`;
 
+    // 参照 (理想形) カーブを生成
+    let refPitch = null, refEnergy = null;
+    if (window.ReferenceContour) {
+      try {
+        const targetText = currentPhrase().en;
+        const ref = await window.ReferenceContour.generate(
+          targetText,
+          features.duration,
+          features.pitch.length
+        );
+        refPitch = ref.pitch;
+        refEnergy = ref.energy;
+      } catch (e) {
+        console.warn("reference contour failed:", e);
+      }
+    }
+
     window.AudioFeatures.drawContour(els.pitchCanvas, features.pitch, {
       fill: "rgba(124, 92, 255, 0.22)",
       stroke: "#9d80ff",
       unit: "Hz",
       emptyLabel: "有声音が検出されませんでした",
+      reference: refPitch,
+      referenceStroke: "rgba(255, 255, 255, 0.6)",
     });
     window.AudioFeatures.drawContour(els.energyCanvas, features.energy, {
       fill: "rgba(76, 212, 176, 0.22)",
       stroke: "#6ce0bf",
       emptyLabel: "音声レベルが低すぎます",
+      reference: refEnergy,
+      referenceStroke: "rgba(255, 255, 255, 0.6)",
     });
   }
 

@@ -575,6 +575,32 @@ button { font-family: inherit; }
 }
 #energyCanvas.contour { height: 80px; }
 
+.contour-legend {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+.contour-legend .lg-line {
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  margin-right: 5px;
+  vertical-align: middle;
+  border-radius: 1px;
+}
+.contour-legend .you-p { background: #9d80ff; }
+.contour-legend .you-e { background: #6ce0bf; }
+.contour-legend .ref-p,
+.contour-legend .ref-e {
+  background: transparent;
+  border-top: 2px dashed rgba(255,255,255,0.6);
+  height: 0;
+}
+
 /* Study Time */
 .study-card .card-head { flex-wrap: wrap; gap: 10px; }
 .study-today {
