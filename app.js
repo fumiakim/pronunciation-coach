@@ -203,56 +203,67 @@
     if (e.key.startsWith(PRON_PREFIX) || e.key.startsWith(SHAD_PREFIX)) renderStudyTime();
   });
 
-  // ----- Cross-origin sync -----
-  // 本アプリが fumiakim.github.io 以外 (localhost / file://) で動いているとき、
-  // github.io の正本ストレージにミラーすることで shadowing-app と合算可能にする。
-  const CANONICAL_ORIGIN = "https://fumiakim.github.io";
-  const isCanonical = window.location.origin === CANONICAL_ORIGIN;
-  let bridge = null;
+  // ----- Cloud sync -----
+  // Vercel KV をバックエンドとした /api/study-time へ全オリジンから直接ミラー。
+  // 端末識別は UUID バケツ (bucket-id.js)。同 UUID = 同一バケツ。
+  // 旧 iframe ブリッジ (sync.html / study-sync-client.js) は撤去。
   let bridgeMirroredDelta = 0;
+  let refreshIntervalId = null;
 
   async function initBridge() {
-    if (isCanonical) return; // 同一オリジン: localStorage が正本のためブリッジ不要
-    if (!window.StudySync) return;
+    if (!window.CloudSync) {
+      console.warn("[study-sync] cloud-sync-client.js が読み込まれていません");
+      return;
+    }
     try {
-      bridge = window.StudySync.create({
-        bridge: CANONICAL_ORIGIN + "/pronunciation-coach/sync.html",
-      });
-      await bridge.ready();
-      await refreshFromBridge();
-      // 録音/再生の都度ブリッジへも反映
-      window.addEventListener(TICK_EVENT, mirrorTickToBridge);
+      // 既存 localStorage を1回だけクラウドへシード (max-merge)
+      await window.CloudSync.migrateOnce();
+      await refreshFromCloud();
+      // 自分の発音時間はティックごとに 5秒バッファでクラウドへ送信
+      window.addEventListener(TICK_EVENT, mirrorTickToCloud);
+      // 他端末からの更新を反映するため 30秒ごとにポーリング
+      refreshIntervalId = setInterval(refreshFromCloud, 30_000);
+      // フォーカス復帰時にも再取得
+      window.addEventListener("focus", refreshFromCloud);
+      // 自タブのクラウド書き込み完了時も再描画
+      window.addEventListener(
+        window.CloudSync.SYNC_UPDATED_EVENT,
+        renderStudyTime
+      );
     } catch (e) {
-      console.warn("[study-sync] bridge unavailable:", e.message || e);
-      bridge = null;
+      console.warn("[study-sync] cloud unavailable:", e.message || e);
     }
   }
 
-  function mirrorTickToBridge() {
-    if (!bridge) return;
+  function mirrorTickToCloud() {
+    if (!window.CloudSync) return;
     bridgeMirroredDelta += 1;
     // 1秒ごとに送ると重いので 5秒バッチで送信
     if (bridgeMirroredDelta >= 5) {
       const n = bridgeMirroredDelta;
       bridgeMirroredDelta = 0;
-      bridge.add("pronunciation", n).catch(() => {});
+      window.CloudSync.addSeconds(n);
     }
   }
 
-  async function refreshFromBridge() {
-    if (!bridge) return;
+  async function refreshFromCloud() {
+    if (!window.CloudSync) return;
     try {
-      const days = await bridge.getRange(7);
-      // ブリッジから返ったデータを localStorage にミラー (上書き)
-      // ただし localStorage の値がブリッジより大きい場合は localStorage を優先
-      // (まだ送信されていない差分が残っている可能性があるため)
+      const days = await window.CloudSync.getRange(7);
+      // クラウドの値が localStorage より大きい場合は更新 (逆は保持)。
+      // 未送信のローカル差分が消えないようにする。
       days.forEach((d) => {
-        const localPron = getDaySeconds(PRON_PREFIX, new Date(d.date));
-        const localShad = getDaySeconds(SHAD_PREFIX, new Date(d.date));
+        const dateObj = new Date(d.date + "T00:00:00");
+        const localPron = getDaySeconds(PRON_PREFIX, dateObj);
+        const localShad = getDaySeconds(SHAD_PREFIX, dateObj);
         const mergedPron = Math.max(localPron, d.pron);
         const mergedShad = Math.max(localShad, d.shad);
-        if (mergedPron !== localPron) localStorage.setItem(PRON_PREFIX + d.date, String(mergedPron));
-        if (mergedShad !== localShad) localStorage.setItem(SHAD_PREFIX + d.date, String(mergedShad));
+        if (mergedPron !== localPron) {
+          localStorage.setItem(PRON_PREFIX + d.date, String(mergedPron));
+        }
+        if (mergedShad !== localShad) {
+          localStorage.setItem(SHAD_PREFIX + d.date, String(mergedShad));
+        }
       });
       renderStudyTime();
     } catch (e) {
@@ -1316,6 +1327,11 @@
     renderStudyTime();
     setLevel(state.level);
     initBridge();
+    // ペアリング UI (歯車アイコン) をマウント
+    if (window.BucketSettings) {
+      const container = document.getElementById("bucketSettings");
+      if (container) window.BucketSettings.init(container);
+    }
   }
 
   init();

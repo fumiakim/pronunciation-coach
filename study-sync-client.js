@@ -1,20 +1,26 @@
 // study-sync-client.js
-// shadowing-app など別オリジンから sync.html を iframe で読み込んで
-// 学習時間 (発音 + シャドーイング) を共有するためのクライアント。
+// ⚠️  DEPRECATED ⚠️
+// This iframe postMessage bridge has been replaced by the Vercel KV-backed
+// HTTP API at https://shadowing-app.vercel.app/api/study-time. See
+// cloud-sync-client.js / bucket-id.js / bucket-settings.js for the new
+// client. This file is kept only so that already-cached pages that load
+// it continue to parse without error; new integrations should not use it.
 //
-// 使い方:
-//   <script src="https://fumiakim.github.io/pronunciation-coach/study-sync-client.js"></script>
-//   <script>
-//     const sync = window.StudySync.create({
-//       bridge: "https://fumiakim.github.io/pronunciation-coach/sync.html",
-//     });
-//     await sync.ready();
-//     await sync.add("shadowing", 30);            // 30秒加算
-//     const days = await sync.getRange(7);        // 直近7日
-//   </script>
+// Historical contract:
+//   const sync = window.StudySync.create({
+//     bridge: "https://fumiakim.github.io/pronunciation-coach/sync.html",
+//   });
+//   await sync.ready();
+//   await sync.add("shadowing", 30);
+//   const days = await sync.getRange(7);
 
 (function (root) {
   "use strict";
+  if (typeof console !== "undefined" && console.warn) {
+    console.warn(
+      "[study-sync-client] deprecated — switch to window.CloudSync (cloud-sync-client.js)"
+    );
+  }
 
   function create(opts) {
     opts = opts || {};

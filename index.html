@@ -187,12 +187,13 @@
           <span class="study-sep">=</span>
           <span class="study-today-total" id="studyTodayTotal">合計 0:00</span>
         </div>
+        <div class="bucket-settings-mount" id="bucketSettings"></div>
       </div>
       <div class="study-strip" id="studyStrip">
         <span class="muted">読み込み中…</span>
       </div>
       <p class="study-note" id="studyNote">
-        ※ シャドーイング時間は <code>shadowing-app</code> と同じブラウザ・同じドメインのデータを表示します。別ドメインで使う場合は下部の同期設定を有効化してください。
+        ※ シャドーイング時間と発音時間はクラウドに集約されます。複数の端末で集計するには、右の <strong>⚙</strong> から UUID をコピーして他端末に貼り付けてください。
       </p>
     </section>
 
@@ -226,11 +227,13 @@
     <p>※ Chrome / Edge / Safari の最新版を推奨。マイクの使用許可が必要です。</p>
   </footer>
 
-  <script src="study-sync-client.js?v=20260520c"></script>
-  <script src="phonemes.js?v=20260520c"></script>
-  <script src="audio-features.js?v=20260520c"></script>
-  <script src="reference-contour.js?v=20260520c"></script>
-  <script src="phrases.js?v=20260520c"></script>
-  <script src="app.js?v=20260520c"></script>
+  <script src="bucket-id.js?v=20260520d"></script>
+  <script src="cloud-sync-client.js?v=20260520d"></script>
+  <script src="bucket-settings.js?v=20260520d"></script>
+  <script src="phonemes.js?v=20260520d"></script>
+  <script src="audio-features.js?v=20260520d"></script>
+  <script src="reference-contour.js?v=20260520d"></script>
+  <script src="phrases.js?v=20260520d"></script>
+  <script src="app.js?v=20260520d"></script>
 </body>
 </html>

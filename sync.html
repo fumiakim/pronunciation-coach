@@ -10,11 +10,18 @@
 </style>
 </head>
 <body>
-<h1>Study Time Sync Bridge</h1>
-<p>This page is an invisible postMessage bridge that lets sibling apps
-(<code>shadowing-app</code>, <code>pronunciation-coach</code>) share daily study time
-through the <code>fumiakim.github.io</code> origin's localStorage.</p>
-<p>It is meant to be embedded as a hidden iframe; it is not interactive on its own.</p>
+<h1>Study Time Sync Bridge <small style="color:#a00">(deprecated)</small></h1>
+<p><strong>This bridge has been retired.</strong> Study-time aggregation now
+goes through a Vercel KV-backed HTTP API at
+<code>https://shadowing-app.vercel.app/api/study-time</code>, identified by
+an anonymous UUID stored in each device's localStorage. See
+<code>cloud-sync-client.js</code> on this same domain for the new client.
+This page is kept only for backward compatibility with already-cached
+parent pages.</p>
+<p>Historically: this page exposed a postMessage bridge so that sibling
+apps (<code>shadowing-app</code>, <code>pronunciation-coach</code>) could
+share daily totals through this origin's localStorage. Now it is
+not actively used.</p>
 
 <script>
 (() => {
