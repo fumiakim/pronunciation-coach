@@ -881,13 +881,19 @@
   async function runAudioAnalysis(blob) {
     if (!window.AudioFeatures) return;
     const seq = ++analysisSeq;
+    showAnalysisCard();
     try {
       const features = await window.AudioFeatures.analyzeBlob(blob);
-      if (seq !== analysisSeq) return; // 古い結果は捨てる
+      if (seq !== analysisSeq) return;
       state.lastAudioFeatures = features;
       renderAudioAnalysis(features);
     } catch (e) {
       console.warn("audio analysis failed:", e);
+      const msg = (e && e.message) ? e.message : "音声解析に失敗しました";
+      window.AudioFeatures.drawError(els.pitchCanvas, msg);
+      window.AudioFeatures.drawError(els.energyCanvas, msg);
+      els.pitchSub.textContent = "解析失敗";
+      els.energySub.textContent = "解析失敗";
     }
   }
 
@@ -910,20 +916,22 @@
     const gopMatch = prev.match(/<span class="pill">GOP[^<]*<\/span>/);
     els.analysisMeta.innerHTML = meta.join("") + (gopMatch ? gopMatch[0] : "");
 
-    els.pitchSub.textContent =
-      summary.meanPitch > 0 ? `平均 ${summary.meanPitch}Hz / 幅 ${summary.pitchRange}Hz` : "";
-    els.energySub.textContent = "";
+    els.pitchSub.textContent = summary.meanPitch > 0
+      ? `平均 ${summary.meanPitch}Hz / 幅 ${summary.pitchRange}Hz (有声 ${summary.voicedFrames}/${summary.totalFrames})`
+      : `有声フレームが検出されませんでした (フレーム数 ${summary.totalFrames})`;
+    els.energySub.textContent =
+      `平均 ${summary.energyMean} / 最大 ${summary.energyMax}`;
 
     window.AudioFeatures.drawContour(els.pitchCanvas, features.pitch, {
-      fill: "rgba(124, 92, 255, 0.18)",
-      stroke: "#7c5cff",
+      fill: "rgba(124, 92, 255, 0.22)",
+      stroke: "#9d80ff",
       unit: "Hz",
-      emptyLabel: "(有声音なし)",
+      emptyLabel: "有声音が検出されませんでした",
     });
     window.AudioFeatures.drawContour(els.energyCanvas, features.energy, {
-      fill: "rgba(76, 212, 176, 0.18)",
-      stroke: "#4cd4b0",
-      emptyLabel: "(無音)",
+      fill: "rgba(76, 212, 176, 0.22)",
+      stroke: "#6ce0bf",
+      emptyLabel: "音声レベルが低すぎます",
     });
   }
 
