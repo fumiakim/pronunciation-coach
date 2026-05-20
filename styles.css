@@ -686,6 +686,7 @@ button { font-family: inherit; }
   margin-left: 6px;
 }
 .bucket-gear {
+  -webkit-appearance: none;
   appearance: none;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border);
@@ -699,6 +700,8 @@ button { font-family: inherit; }
   font-size: 14px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
+  font-family: inherit;
+  line-height: 1;
 }
 .bucket-gear:hover {
   color: var(--text);
@@ -710,7 +713,7 @@ button { font-family: inherit; }
   right: 0;
   top: calc(100% + 6px);
   width: 300px;
-  background: var(--bg-card, #1a1a24);
+  background: var(--card, #1f2438);
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -718,6 +721,7 @@ button { font-family: inherit; }
   z-index: 100;
   font-size: 12px;
   color: var(--text);
+  text-align: left;
 }
 .bucket-panel.hidden { display: none; }
 .bucket-panel-header {
@@ -756,6 +760,8 @@ button { font-family: inherit; }
   white-space: nowrap;
 }
 .bucket-input {
+  -webkit-appearance: none;
+  appearance: none;
   flex: 1;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border);
@@ -771,6 +777,7 @@ button { font-family: inherit; }
   border-color: rgba(124, 92, 255, 0.65);
 }
 .bucket-btn {
+  -webkit-appearance: none;
   appearance: none;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border);
@@ -780,6 +787,8 @@ button { font-family: inherit; }
   font-size: 10px;
   cursor: pointer;
   white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.2;
   transition: color 0.15s, border-color 0.15s;
 }
 .bucket-btn:hover {
@@ -796,12 +805,15 @@ button { font-family: inherit; }
   color: #fff;
 }
 .bucket-link {
+  -webkit-appearance: none;
+  appearance: none;
   background: none;
   border: none;
   color: var(--text-dim);
   font-size: 11px;
   cursor: pointer;
   padding: 0;
+  font-family: inherit;
   text-decoration: underline;
 }
 .bucket-link:hover { color: var(--text); }
