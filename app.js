@@ -922,11 +922,21 @@
 
   async function renderAudioAnalysis(features) {
     showAnalysisCard();
-    const summary = window.AudioFeatures.summarize(features);
+
+    // 前後の無音をトリミングしてから解析を進める
+    const trimmed = window.AudioFeatures.trimSilence(features);
+    const summary = window.AudioFeatures.summarize(trimmed);
 
     // メタ情報 (GOP は phoneme 側で追記)
     const meta = [];
-    meta.push(`<span class="pill">継続 ${summary.durationSec}s</span>`);
+    if (trimmed.trimmed) {
+      meta.push(
+        `<span class="pill">継続 ${summary.durationSec}s ` +
+        `(録音 ${trimmed.trimmed.originalDuration.toFixed(2)}s から無音除去)</span>`
+      );
+    } else {
+      meta.push(`<span class="pill">継続 ${summary.durationSec}s</span>`);
+    }
     if (summary.meanPitch > 0) meta.push(`<span class="pill">平均ピッチ ${summary.meanPitch}Hz</span>`);
     if (summary.pitchRange > 0) meta.push(`<span class="pill">ピッチ幅 ${summary.pitchRange}Hz</span>`);
     if (summary.sylPerSec > 0) meta.push(`<span class="pill">発話速度 ${summary.sylPerSec} 音節/秒</span>`);
@@ -940,15 +950,15 @@
     els.energySub.textContent =
       `平均 ${summary.energyMean} / 最大 ${summary.energyMax}`;
 
-    // 参照 (理想形) カーブを生成
+    // 参照 (理想形) カーブを生成 — トリミング後の duration に合わせる
     let refPitch = null, refEnergy = null;
     if (window.ReferenceContour) {
       try {
         const targetText = currentPhrase().en;
         const ref = await window.ReferenceContour.generate(
           targetText,
-          features.duration,
-          features.pitch.length
+          trimmed.duration,
+          trimmed.pitch.length
         );
         refPitch = ref.pitch;
         refEnergy = ref.energy;
@@ -956,6 +966,9 @@
         console.warn("reference contour failed:", e);
       }
     }
+
+    // 以降の描画はトリミング後のデータを使う
+    features = trimmed;
 
     window.AudioFeatures.drawContour(els.pitchCanvas, features.pitch, {
       fill: "rgba(124, 92, 255, 0.22)",

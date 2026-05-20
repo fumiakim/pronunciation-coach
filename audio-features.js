@@ -302,6 +302,60 @@
     ctx.fillText("⚠ " + message, W / 2, H / 2);
   }
 
+  // 前後の無音を検出してトリミング (発話区間のみ残す)
+  // - energy がピークの relMin 倍以下、かつ absMin 以下のフレームを無音とみなす
+  // - 始端/終端から無音フレームを削り、padding (前50ms / 後100ms) だけ残す
+  // - 中間の無音は保持 (休止やリズムは発話の一部)
+  function trimSilence(features, opts) {
+    opts = opts || {};
+    const { pitch, energy, times, sampleRate, duration } = features;
+    const N = energy.length;
+    if (N === 0) return features;
+
+    const maxE = Math.max.apply(null, energy);
+    if (!isFinite(maxE) || maxE <= 0) return features;
+
+    const absMin = opts.absMin != null ? opts.absMin : 0.005;
+    const relMin = opts.relMin != null ? opts.relMin : 0.10;
+    const threshold = Math.max(absMin, relMin * maxE);
+
+    let first = 0;
+    while (first < N && energy[first] < threshold) first++;
+    let last = N - 1;
+    while (last > first && energy[last] < threshold) last--;
+
+    if (first >= last) return features;
+    // 元と同じならトリミングは行わなかったことにする
+    if (first === 0 && last === N - 1) return features;
+
+    const hopSec = times && times.length > 1 ? times[1] - times[0] : 0.032;
+    const padBefore = Math.round(0.05 / hopSec); // 50ms 前
+    const padAfter = Math.round(0.10 / hopSec);  // 100ms 後
+    first = Math.max(0, first - padBefore);
+    last = Math.min(N - 1, last + padAfter);
+
+    const trimmedPitch = pitch.slice(first, last + 1);
+    const trimmedEnergy = energy.slice(first, last + 1);
+    const startSec = times[first];
+    const endSec = times[last];
+    const trimmedDuration = Math.max(0.001, endSec - startSec);
+    const trimmedTimes = new Array(trimmedPitch.length);
+    for (let i = 0; i < trimmedTimes.length; i++) trimmedTimes[i] = i * hopSec;
+
+    return {
+      pitch: trimmedPitch,
+      energy: trimmedEnergy,
+      times: trimmedTimes,
+      sampleRate,
+      duration: trimmedDuration,
+      trimmed: {
+        originalDuration: duration,
+        startSec: +startSec.toFixed(3),
+        endSec: +endSec.toFixed(3),
+      },
+    };
+  }
+
   function summarize(features) {
     const { pitch, energy, duration } = features;
     const voiced = pitch.filter((v) => v > 0);
@@ -338,5 +392,5 @@
     };
   }
 
-  window.AudioFeatures = { analyzeBlob, drawContour, drawError, summarize, fitCanvas };
+  window.AudioFeatures = { analyzeBlob, drawContour, drawError, summarize, fitCanvas, trimSilence };
 })();
