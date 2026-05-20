@@ -311,11 +311,17 @@
       setWhisperProgress(100, "✓ 完了");
       whisper.state = "ready";
 
-      // バナーを成功メッセージに更新
-      els.bannerTitle.textContent = "音声認識が有効になりました";
-      els.bannerText.innerHTML =
-        "Safari でも自動採点が使えるようになりました。次の録音から自動的に解析されます。";
-      els.enableWhisper.classList.add("hidden");
+      // 次回以降はバナーを出さずに自動でバックグラウンド読込する
+      try { localStorage.setItem("pcoach.whisperReady", "1"); } catch (_) {}
+
+      // 初回ロード時のみバナーを成功メッセージへ更新
+      // (バックグラウンド読込時にはバナー自体を出していない)
+      if (!els.banner.classList.contains("hidden")) {
+        els.bannerTitle.textContent = "音声認識が有効になりました";
+        els.bannerText.innerHTML =
+          "Safari でも自動採点が使えるようになりました。次の録音から自動的に解析されます。";
+        els.enableWhisper.classList.add("hidden");
+      }
 
       return whisper.pipe;
     })();
@@ -1214,6 +1220,12 @@
 
   // ----- Init -----
   function init() {
+    // Whisper を以前読み込んだか (キャッシュ済みか)
+    let whisperPreviouslyLoaded = false;
+    try {
+      whisperPreviouslyLoaded = localStorage.getItem("pcoach.whisperReady") === "1";
+    } catch (_) {}
+
     // 環境ごとの案内
     if (isSafari && isFileProto) {
       showBanner(
@@ -1222,7 +1234,7 @@
           '<code>start.command</code> をダブルクリックして <code>http://localhost:8765</code> から開いてください。',
         false
       );
-    } else if (isSafari) {
+    } else if (isSafari && !whisperPreviouslyLoaded) {
       // Safari は webkitSpeechRecognition があっても実装が動かないため、
       // Whisper を読み込めば自動採点が可能になる旨を案内
       showBanner(
@@ -1231,6 +1243,19 @@
           "初回のみ約40MBをダウンロードします（次回以降はブラウザにキャッシュされます）。",
         true
       );
+    } else if (isSafari && whisperPreviouslyLoaded) {
+      // 以前ロード済み: バナーを出さず、バックグラウンドで再ロード
+      // (キャッシュからなら数百ms で完了する)
+      loadWhisper().catch(() => {
+        // キャッシュが消えていた等で失敗した場合はフラグを下ろし、
+        // 次回起動時にもう一度バナーを出す
+        try { localStorage.removeItem("pcoach.whisperReady"); } catch (_) {}
+        showBanner(
+          "Safariでも自動採点を使うには",
+          "Whisper モデルの再読込が必要です。下のボタンから有効化してください。",
+          true
+        );
+      });
     }
 
     if (!recognition && !hasGetUserMedia) {
@@ -1242,7 +1267,7 @@
         "このブラウザの音声認識は使えません。上の「音声認識を有効化」を押すか、お手本との聞き比べモードで練習しましょう。",
         ""
       );
-    } else if (isSafari) {
+    } else if (isSafari && !whisperPreviouslyLoaded) {
       setStatus(
         "Safariの音声認識は動作しないことがあります。「音声認識を有効化」を押しておくと安定して使えます。",
         ""
