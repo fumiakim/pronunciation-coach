@@ -127,6 +127,47 @@
       </div>
     </section>
 
+    <!-- Detailed Analysis -->
+    <section class="card analysis-card hidden" id="analysisCard">
+      <div class="card-head">
+        <h2>詳細分析</h2>
+        <div class="analysis-meta" id="analysisMeta"></div>
+      </div>
+
+      <div class="analysis-grid">
+        <div class="analysis-block phoneme-block">
+          <h3>音素レベル評価 (GOP)</h3>
+          <div class="phoneme-strip" id="phonemeStrip">
+            <span class="muted">録音後、ここに音素ごとの正確さが表示されます。</span>
+          </div>
+          <p class="phoneme-legend">
+            <span class="dot good"></span>正確
+            <span class="dot ok"></span>近い
+            <span class="dot bad"></span>誤り
+            <span class="dot miss"></span>脱落
+            <span class="dot extra"></span>余分
+          </p>
+        </div>
+
+        <div class="analysis-block">
+          <h3>ピッチ (抑揚) <span class="block-sub" id="pitchSub"></span></h3>
+          <canvas class="contour" id="pitchCanvas" width="560" height="100"></canvas>
+        </div>
+
+        <div class="analysis-block">
+          <h3>エネルギー (強弱) <span class="block-sub" id="energySub"></span></h3>
+          <canvas class="contour" id="energyCanvas" width="560" height="80"></canvas>
+        </div>
+
+        <div class="analysis-block tips-block">
+          <h3>音素レベルのヒント</h3>
+          <ul class="tips-list" id="phonemeTipsList">
+            <li class="muted">録音すると、音素ごとの矯正アドバイスを表示します。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <!-- Study Time -->
     <section class="card study-card">
       <div class="card-head">
@@ -179,6 +220,8 @@
   </footer>
 
   <script src="study-sync-client.js"></script>
+  <script src="phonemes.js"></script>
+  <script src="audio-features.js"></script>
   <script src="phrases.js"></script>
   <script src="app.js"></script>
 </body>

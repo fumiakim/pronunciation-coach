@@ -66,6 +66,14 @@
     studyTodayPron: $("studyTodayPron"),
     studyTodayShad: $("studyTodayShad"),
     studyTodayTotal: $("studyTodayTotal"),
+    analysisCard: $("analysisCard"),
+    analysisMeta: $("analysisMeta"),
+    phonemeStrip: $("phonemeStrip"),
+    phonemeTipsList: $("phonemeTipsList"),
+    pitchCanvas: $("pitchCanvas"),
+    energyCanvas: $("energyCanvas"),
+    pitchSub: $("pitchSub"),
+    energySub: $("energySub"),
   };
 
   // ----- Study time tracking -----
@@ -403,7 +411,11 @@
     const blob = new Blob(audioChunks, { type });
     if (state.lastAudioUrl) URL.revokeObjectURL(state.lastAudioUrl);
     state.lastAudioUrl = URL.createObjectURL(blob);
+    state.lastAudioBlob = blob;
     els.playbackRow.classList.remove("hidden");
+
+    // 音響特徴 (ピッチ・エネルギー) は認識結果を待たずに走らせる
+    runAudioAnalysis(blob);
 
     // SR が結果を返した場合はそのまま終了
     if (state.audioGotResult) return;
@@ -711,6 +723,18 @@
     els.scorePill.className = "score-pill";
     els.wordDiff.innerHTML = '<span class="muted">録音すると、ここに単語ごとの正誤が表示されます。</span>';
     els.tips.innerHTML = '<li class="muted">録音すると、苦手な音に対するアドバイスを表示します。</li>';
+    if (els.analysisCard) {
+      els.analysisCard.classList.add("hidden");
+      els.analysisMeta.innerHTML = "";
+      els.phonemeStrip.innerHTML = '<span class="muted">録音後、ここに音素ごとの正確さが表示されます。</span>';
+      els.phonemeTipsList.innerHTML = '<li class="muted">録音すると、音素ごとの矯正アドバイスを表示します。</li>';
+      const pc = els.pitchCanvas.getContext("2d");
+      pc.clearRect(0, 0, els.pitchCanvas.width, els.pitchCanvas.height);
+      const ec = els.energyCanvas.getContext("2d");
+      ec.clearRect(0, 0, els.energyCanvas.width, els.energyCanvas.height);
+      els.pitchSub.textContent = "";
+      els.energySub.textContent = "";
+    }
   }
 
   // ----- History -----
@@ -847,6 +871,196 @@
       score,
       ts: Date.now(),
     });
+
+    // 詳細分析: 音素レベル評価 (GOP)
+    runPhonemeAnalysis(target, heard);
+  }
+
+  // ----- Detailed analysis: audio features -----
+  let analysisSeq = 0;
+  async function runAudioAnalysis(blob) {
+    if (!window.AudioFeatures) return;
+    const seq = ++analysisSeq;
+    try {
+      const features = await window.AudioFeatures.analyzeBlob(blob);
+      if (seq !== analysisSeq) return; // 古い結果は捨てる
+      state.lastAudioFeatures = features;
+      renderAudioAnalysis(features);
+    } catch (e) {
+      console.warn("audio analysis failed:", e);
+    }
+  }
+
+  function showAnalysisCard() {
+    els.analysisCard.classList.remove("hidden");
+  }
+
+  function renderAudioAnalysis(features) {
+    showAnalysisCard();
+    const summary = window.AudioFeatures.summarize(features);
+
+    // メタ情報 (GOP は phoneme 側で追記)
+    const meta = [];
+    meta.push(`<span class="pill">継続 ${summary.durationSec}s</span>`);
+    if (summary.meanPitch > 0) meta.push(`<span class="pill">平均ピッチ ${summary.meanPitch}Hz</span>`);
+    if (summary.pitchRange > 0) meta.push(`<span class="pill">ピッチ幅 ${summary.pitchRange}Hz</span>`);
+    if (summary.sylPerSec > 0) meta.push(`<span class="pill">発話速度 ${summary.sylPerSec} 音節/秒</span>`);
+    // 既存の GOP ピル (phoneme 側で追加されていれば) を保持
+    const prev = els.analysisMeta.innerHTML;
+    const gopMatch = prev.match(/<span class="pill">GOP[^<]*<\/span>/);
+    els.analysisMeta.innerHTML = meta.join("") + (gopMatch ? gopMatch[0] : "");
+
+    els.pitchSub.textContent =
+      summary.meanPitch > 0 ? `平均 ${summary.meanPitch}Hz / 幅 ${summary.pitchRange}Hz` : "";
+    els.energySub.textContent = "";
+
+    window.AudioFeatures.drawContour(els.pitchCanvas, features.pitch, {
+      fill: "rgba(124, 92, 255, 0.18)",
+      stroke: "#7c5cff",
+      unit: "Hz",
+      emptyLabel: "(有声音なし)",
+    });
+    window.AudioFeatures.drawContour(els.energyCanvas, features.energy, {
+      fill: "rgba(76, 212, 176, 0.18)",
+      stroke: "#4cd4b0",
+      emptyLabel: "(無音)",
+    });
+  }
+
+  // ----- Detailed analysis: phoneme-level (GOP) -----
+  let phonemeSeq = 0;
+  async function runPhonemeAnalysis(refText, hypText) {
+    if (!window.Phonemes) return;
+    const seq = ++phonemeSeq;
+    showAnalysisCard();
+    els.phonemeStrip.innerHTML = '<span class="muted">音素辞書を読込中…</span>';
+    try {
+      await window.Phonemes.ensureConverter();
+      const refWords = await window.Phonemes.wordsToPhonemes(refText);
+      const hypWords = await window.Phonemes.wordsToPhonemes(hypText);
+      if (seq !== phonemeSeq) return;
+      const refTokens = refWords.flatMap((w) => w.tokens);
+      const hypTokens = hypWords.flatMap((w) => w.tokens);
+      const ops = window.Phonemes.alignPhonemes(refTokens, hypTokens);
+      const scores = window.Phonemes.gopScores(refTokens, ops);
+      const overall = window.Phonemes.overallScore(scores);
+      const tips = window.Phonemes.diagnose(ops);
+      renderPhonemeAnalysis(refWords, ops, scores, overall, tips);
+    } catch (e) {
+      console.warn("phoneme analysis failed:", e);
+      els.phonemeStrip.innerHTML =
+        '<span class="muted">音素辞書を読み込めませんでした。ネットワーク接続をご確認ください。</span>';
+    }
+  }
+
+  function renderPhonemeAnalysis(refWords, ops, scores, overall, tips) {
+    els.phonemeStrip.innerHTML = "";
+    let tokIdx = 0;
+    let opIdx = 0;
+
+    function appendExtras(parent) {
+      while (opIdx < ops.length && ops[opIdx].type === "extra") {
+        const op = ops[opIdx++];
+        const ex = document.createElement("span");
+        ex.className = "phoneme extra";
+        const sym = document.createElement("span");
+        sym.className = "ph-sym";
+        sym.textContent = "+" + op.hyp;
+        ex.appendChild(sym);
+        parent.appendChild(ex);
+      }
+    }
+
+    for (const w of refWords) {
+      const wordDiv = document.createElement("div");
+      wordDiv.className = "phoneme-word";
+
+      const label = document.createElement("div");
+      label.className = "phoneme-word-label";
+      label.textContent = w.unknown ? w.word + " (?)" : w.word + " /" + w.ipa + "/";
+      wordDiv.appendChild(label);
+
+      appendExtras(wordDiv);
+
+      for (let k = 0; k < w.tokens.length; k++) {
+        if (opIdx >= ops.length) break;
+        const op = ops[opIdx++];
+        const score = scores[tokIdx] != null ? scores[tokIdx] : 0;
+        tokIdx++;
+
+        const ph = document.createElement("span");
+        const cls =
+          op.type === "match" ? "good" :
+          op.type === "near" ? "ok" :
+          op.type === "sub" ? "bad" :
+          op.type === "miss" ? "miss" : "extra";
+        ph.className = "phoneme " + cls;
+
+        const sym = document.createElement("span");
+        sym.className = "ph-sym";
+        sym.textContent = op.ref || op.hyp || "?";
+        ph.appendChild(sym);
+
+        const bar = document.createElement("span");
+        bar.className = "ph-bar";
+        const fill = document.createElement("span");
+        fill.className = "ph-fill";
+        fill.style.width = Math.round(score * 100) + "%";
+        bar.appendChild(fill);
+        ph.appendChild(bar);
+
+        if (op.type === "sub" || op.type === "near") {
+          const hyp = document.createElement("span");
+          hyp.className = "ph-hyp";
+          hyp.textContent = "→" + (op.hyp || "?");
+          ph.appendChild(hyp);
+        }
+        wordDiv.appendChild(ph);
+        appendExtras(wordDiv);
+      }
+      els.phonemeStrip.appendChild(wordDiv);
+    }
+
+    // 末尾に残った extra
+    if (opIdx < ops.length) {
+      const trail = document.createElement("div");
+      trail.className = "phoneme-word";
+      const label = document.createElement("div");
+      label.className = "phoneme-word-label";
+      label.textContent = "(余分)";
+      trail.appendChild(label);
+      while (opIdx < ops.length) {
+        const op = ops[opIdx++];
+        if (!op.hyp) continue;
+        const ex = document.createElement("span");
+        ex.className = "phoneme extra";
+        const sym = document.createElement("span");
+        sym.className = "ph-sym";
+        sym.textContent = "+" + op.hyp;
+        ex.appendChild(sym);
+        trail.appendChild(ex);
+      }
+      els.phonemeStrip.appendChild(trail);
+    }
+
+    // ヒント
+    els.phonemeTipsList.innerHTML = "";
+    if (tips.length === 0) {
+      const li = document.createElement("li");
+      li.style.color = "var(--good)";
+      li.textContent = "音素レベルでも非常に良好です。";
+      els.phonemeTipsList.appendChild(li);
+    } else {
+      for (const t of tips) {
+        const li = document.createElement("li");
+        li.textContent = t;
+        els.phonemeTipsList.appendChild(li);
+      }
+    }
+
+    // GOP ピル
+    const cur = els.analysisMeta.innerHTML.replace(/<span class="pill">GOP[^<]*<\/span>/g, "");
+    els.analysisMeta.innerHTML = cur + `<span class="pill">GOP ${overall}/100</span>`;
   }
 
   function onEnd() {
