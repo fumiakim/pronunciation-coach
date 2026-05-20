@@ -923,8 +923,11 @@
   async function renderAudioAnalysis(features) {
     showAnalysisCard();
 
-    // 前後の無音をトリミングしてから解析を進める
-    const trimmed = window.AudioFeatures.trimSilence(features);
+    // 前後の無音をトリミングしてから解析を進める (古い audio-features.js が
+    // キャッシュされているケースに備えて関数の存在をチェック)
+    const trimmed = (window.AudioFeatures && window.AudioFeatures.trimSilence)
+      ? window.AudioFeatures.trimSilence(features)
+      : features;
     const summary = window.AudioFeatures.summarize(trimmed);
 
     // メタ情報 (GOP は phoneme 側で追記)

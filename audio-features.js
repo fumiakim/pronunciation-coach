@@ -312,7 +312,12 @@
     const N = energy.length;
     if (N === 0) return features;
 
-    const maxE = Math.max.apply(null, energy);
+    // Math.max.apply は大配列で Safari がスタック制限に当たることがあるため手動 loop
+    let maxE = 0;
+    for (let i = 0; i < N; i++) {
+      const v = energy[i];
+      if (v > maxE) maxE = v;
+    }
     if (!isFinite(maxE) || maxE <= 0) return features;
 
     const absMin = opts.absMin != null ? opts.absMin : 0.005;
