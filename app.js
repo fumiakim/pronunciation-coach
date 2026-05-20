@@ -1077,10 +1077,15 @@
     els.record.classList.remove("is-recording");
     els.recordIcon.textContent = "🎤";
     els.recordLabel.textContent = "録音開始";
+    // SR が自動終了 (無音検出) した場合も MediaRecorder を止めて
+    // finalizeAudio → runAudioAnalysis を確実に走らせる。
+    stopMediaRecording();
   }
 
   function onError(e) {
     stopTracking("rec");
+    // SR エラー時も MediaRecorder を止めて、最低限の音響分析は実行する
+    stopMediaRecording();
     // MediaRecorder 側は別経路。SR だけ失敗した場合は録音は継続/完了し、
     // finalizeAudio() の方で「認識は使えなかった」フォールバック表示を行う。
     if (e.error === "not-allowed" || e.error === "service-not-allowed") {
