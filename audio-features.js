@@ -160,7 +160,12 @@
     const maxV = opts.max != null ? opts.max : Math.max(...valid);
     const span = Math.max(1e-6, maxV - minV);
 
-    function plotLine(arr, lineOpts) {
+    function valueToY(v) {
+      const norm = v > 0 ? (v - minV) / span : 0;
+      return H - norm * H * 0.85 - H * 0.08;
+    }
+
+    function plotSolidLine(arr, lineOpts) {
       const N = arr.length;
       if (lineOpts.fill) {
         ctx.fillStyle = lineOpts.fill;
@@ -169,8 +174,7 @@
         for (let i = 0; i < N; i++) {
           const v = arr[i];
           const x = (i / (N - 1 || 1)) * W;
-          const norm = v > 0 ? (v - minV) / span : 0;
-          const y = H - norm * H * 0.85 - H * 0.08;
+          const y = valueToY(v);
           if (v > 0) {
             if (!started) { ctx.moveTo(x, H); ctx.lineTo(x, y); started = true; }
             else ctx.lineTo(x, y);
@@ -185,14 +189,12 @@
 
       ctx.strokeStyle = lineOpts.stroke;
       ctx.lineWidth = lineOpts.lineWidth || 2 * dpr * 0.6;
-      ctx.setLineDash(lineOpts.dash || []);
       ctx.beginPath();
       let drawing = false;
       for (let i = 0; i < N; i++) {
         const v = arr[i];
         const x = (i / (N - 1 || 1)) * W;
-        const norm = v > 0 ? (v - minV) / span : 0;
-        const y = H - norm * H * 0.85 - H * 0.08;
+        const y = valueToY(v);
         if (v > 0) {
           if (!drawing) { ctx.moveTo(x, y); drawing = true; }
           else ctx.lineTo(x, y);
@@ -201,20 +203,75 @@
         }
       }
       ctx.stroke();
-      ctx.setLineDash([]);
     }
 
-    // 参照カーブを背景に
+    // Safari の ctx.setLineDash が複数 subpath を含むストロークで効かない
+    // ことがあるため、手動でセグメントを並べてダッシュを描画する。
+    function plotDashedLine(arr, lineOpts) {
+      const N = arr.length;
+      ctx.strokeStyle = lineOpts.stroke;
+      ctx.lineWidth = lineOpts.lineWidth || 1.5 * dpr;
+      const dashLen = (lineOpts.dashLen || 6) * dpr;
+      const gapLen = (lineOpts.gapLen || 4) * dpr;
+      ctx.beginPath();
+
+      let prev = null;
+      let phase = 0;
+      let drawingDash = true;
+
+      for (let i = 0; i < N; i++) {
+        const v = arr[i];
+        if (v <= 0) { prev = null; continue; }
+        const x = (i / (N - 1 || 1)) * W;
+        const y = valueToY(v);
+        const cur = { x, y };
+
+        if (prev) {
+          const dx = cur.x - prev.x;
+          const dy = cur.y - prev.y;
+          const segLen = Math.sqrt(dx * dx + dy * dy);
+          if (segLen > 0) {
+            const ux = dx / segLen;
+            const uy = dy / segLen;
+            let consumed = 0;
+            let from = prev;
+            while (consumed < segLen) {
+              const target = drawingDash ? dashLen : gapLen;
+              const remaining = target - phase;
+              const step = Math.min(remaining, segLen - consumed);
+              const toX = from.x + ux * step;
+              const toY = from.y + uy * step;
+              if (drawingDash) {
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(toX, toY);
+              }
+              from = { x: toX, y: toY };
+              consumed += step;
+              phase += step;
+              if (phase >= target - 1e-6) {
+                drawingDash = !drawingDash;
+                phase = 0;
+              }
+            }
+          }
+        }
+        prev = cur;
+      }
+      ctx.stroke();
+    }
+
+    // 参照カーブを背景に (手動ダッシュ — Safari でも確実に表示)
     if (ref) {
-      plotLine(ref, {
-        stroke: opts.referenceStroke || "rgba(255,255,255,0.55)",
-        lineWidth: 1.5 * dpr,
-        dash: [6 * dpr, 4 * dpr],
+      plotDashedLine(ref, {
+        stroke: opts.referenceStroke || "rgba(255,255,255,0.65)",
+        lineWidth: 1.6 * dpr,
+        dashLen: 6,
+        gapLen: 4,
       });
     }
 
     // ユーザー曲線を上に
-    plotLine(values, {
+    plotSolidLine(values, {
       fill: opts.fill,
       stroke: opts.stroke || "#7c5cff",
       lineWidth: 2 * dpr * 0.7,
