@@ -21,7 +21,11 @@
     return;
   }
 
-  var DEFAULT_API_BASE = "https://shadowing-app.vercel.app";
+  // Actual production deployment for shadowing-app on Vercel. The bare
+  // "shadowing-app.vercel.app" hostname was taken by another project, so
+  // Vercel issued this -virid suffix. End users can still override this
+  // via the gear panel → "クラウド API のベース URL".
+  var DEFAULT_API_BASE = "https://shadowing-app-virid.vercel.app";
   var API_BASE_KEY = "study-api-base";
   var MIGRATION_FLAG_KEY = "study-migration-v2";
   var FLUSH_INTERVAL_MS = 5000;

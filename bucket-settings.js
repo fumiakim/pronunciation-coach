@@ -37,7 +37,7 @@
         '<div class="bucket-panel-section">' +
           '<div class="bucket-panel-label">クラウド API のベース URL</div>' +
           '<div class="bucket-row">' +
-            '<input class="bucket-input" id="apiBaseInput" type="text" autocomplete="off" placeholder="https://shadowing-app.vercel.app" />' +
+            '<input class="bucket-input" id="apiBaseInput" type="text" autocomplete="off" placeholder="https://shadowing-app-virid.vercel.app" />' +
             '<button class="bucket-btn" id="apiBaseApply" type="button">保存</button>' +
           '</div>' +
         '</div>' +
