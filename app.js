@@ -390,15 +390,28 @@
       mediaRecorder.addEventListener("dataavailable", (e) => {
         if (e.data && e.data.size > 0) audioChunks.push(e.data);
       });
-      mediaRecorder.addEventListener("stop", finalizeAudio);
-      mediaRecorder.start();
+      mediaRecorder.addEventListener("stop", () => {
+        // ここで track をクリーンアップ (stop イベント前にやるとフラッシュをロストする)
+        if (mediaStream) {
+          try { mediaStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+          mediaStream = null;
+        }
+        finalizeAudio();
+      });
+      // 500ms ごとに dataavailable を発火させて、最後の flush をロストしても
+      // チャンクが手元に残るようにする (SR 自動終了パスの安定性向上)
+      mediaRecorder.start(500);
     }
   }
 
   function stopMediaRecording() {
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      try { mediaRecorder.requestData(); } catch (_) {}
       try { mediaRecorder.stop(); } catch (_) {}
+      // track の停止は MediaRecorder の "stop" ハンドラで行う (上参照)
+      return;
     }
+    // すでに inactive (例: 手動 stop 後の二重呼び出し) ならここで track 後始末
     if (mediaStream) {
       try { mediaStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
       mediaStream = null;
