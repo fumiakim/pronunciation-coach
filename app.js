@@ -312,13 +312,14 @@
       // ONNX Runtime のWASMをCDNから取得
       env.allowLocalModels = false;
       // iOS Safari は cross-origin isolation (COOP/COEP) を要求するスレッド
-      // 実装が動かないため、numThreads=1 の単一スレッドWASMに固定する。
-      // ただし numThreads=1 + proxy=false にするとメインスレッドで推論が走り
-      // ページが完全にフリーズするため、proxy=true で Worker に推論を逃がす。
-      // (UI が止まらず、タイマーや進捗表示も正しく更新される)
+      // 実装が動かないため numThreads=1 に固定する。
+      // proxy=true (Worker で推論) は iOS Safari では Worker 作成自体が
+      // ハングするため使えず、proxy=false (メインスレッド) に戻す。
+      // 結果として推論中の数十秒 UI がフリーズするが、これは事前に
+      // 「数十秒UIが止まります」と明示し、ユーザーに織り込んでもらう。
       if (env.backends && env.backends.onnx && env.backends.onnx.wasm) {
         env.backends.onnx.wasm.numThreads = 1;
-        env.backends.onnx.wasm.proxy = true;
+        env.backends.onnx.wasm.proxy = false;
       }
       console.log("[whisper] env config:", env.backends && env.backends.onnx ? env.backends.onnx.wasm : "n/a");
 
@@ -358,7 +359,13 @@
     })();
 
     try {
-      return await whisper.loadPromise;
+      // 120秒のタイムアウト (普通は40〜60MBの初回DL + WASM compile が完了する)
+      return await Promise.race([
+        whisper.loadPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Whisperモデル読込タイムアウト(120秒)")), 120_000)
+        ),
+      ]);
     } catch (e) {
       whisper.state = "failed";
       whisper.loadPromise = null;
@@ -502,13 +509,15 @@
 
     // Whisper が使える環境なら自動で解析
     if (whisper.state === "ready") {
-      // フリーズと重い処理を区別できるよう経過秒数を表示
-      let elapsedSec = 0;
-      setStatus("Whisperで解析中… 0s (最大90s)", "recording");
-      const tickId = setInterval(() => {
-        elapsedSec++;
-        setStatus(`Whisperで解析中… ${elapsedSec}s (最大90s)`, "recording");
-      }, 1000);
+      // iOS Safari など proxy=false の環境では推論中にメインスレッドが
+      // 同期的にブロックされ、setInterval も発火しない (タイマー表示無効)。
+      // 代わりに「UIが固まる」ことを事前に明示してから推論開始。
+      const blockingNote = isIOS
+        ? "Whisperで解析中… 30〜60秒間UIが応答しなくなります (正常動作)"
+        : "Whisperで解析中…";
+      setStatus(blockingNote, "recording");
+      // setStatus を反映するため一度ブラウザに描画させてから推論開始
+      await new Promise((r) => setTimeout(r, 50));
       try {
         const text = await transcribeWithWhisper(blob);
         if (text) {
@@ -519,8 +528,6 @@
       } catch (e) {
         console.error("Whisper transcription failed:", e);
         setStatus("Whisper解析に失敗: " + (e.message || e), "error");
-      } finally {
-        clearInterval(tickId);
       }
     }
 
