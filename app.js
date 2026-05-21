@@ -17,9 +17,17 @@
   // ----- Env detection -----
   const ua = navigator.userAgent;
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
+  // iPadOS 13+ はデフォルトで UA を "Macintosh" と詐称するので touch points も併用
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && typeof navigator.maxTouchPoints === "number" && navigator.maxTouchPoints > 1);
   const isFileProto = window.location.protocol === "file:";
   const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   const hasMediaRecorder = typeof window.MediaRecorder !== "undefined";
+  // 起動時診断ログ (DevTools で確認用)
+  try {
+    console.log("[pcoach] env:", { isSafari, isIOS, isFileProto, hasGetUserMedia, hasMediaRecorder, ua });
+  } catch (_) {}
 
   // ----- Elements -----
   const $ = (id) => document.getElementById(id);
@@ -482,9 +490,13 @@
   }
 
   // ----- Speech Recognition setup -----
+  // iOS / iPadOS Safari の webkitSpeechRecognition は実装が動作せず、
+  // start() 直後に error: "aborted" を発火する。試みても失敗し、UIに
+  // 誤った中途半端な結果が出るだけなので、iOS では SR 自体を無効化し
+  // 強制的に Whisper パスへ誘導する。
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
-  if (SR) {
+  if (SR && !isIOS) {
     recognition = new SR();
     recognition.lang = "en-US";
     recognition.continuous = false;
@@ -1152,6 +1164,9 @@
     stopTracking("rec");
     // SR エラー時も MediaRecorder を止めて、最低限の音響分析は実行する
     stopMediaRecording();
+    // SR が aborted/error した場合は前回の判定結果がそのまま残ると紛らわしいので
+    // 結果表示をクリアして「認識できなかった」状態を明示する
+    if (!state.audioGotResult) resetResults();
     // MediaRecorder 側は別経路。SR だけ失敗した場合は録音は継続/完了し、
     // finalizeAudio() の方で「認識は使えなかった」フォールバック表示を行う。
     if (e.error === "not-allowed" || e.error === "service-not-allowed") {
@@ -1284,9 +1299,13 @@
     } else if (isSafari && !whisperPreviouslyLoaded) {
       // Safari は webkitSpeechRecognition があっても実装が動かないため、
       // Whisper を読み込めば自動採点が可能になる旨を案内
+      const intro = isIOS
+        ? "iPad / iPhone Safari の音声認識APIは <code>start()</code> 直後に <code>aborted</code> エラーで停止する既知の壊れた実装です。"
+        : "Safari は標準の音声認識APIが機能しないため、";
       showBanner(
-        "Safariでも自動採点を使うには",
-        "Safari は標準の音声認識APIが機能しないため、ブラウザ内で動く小型のWhisperモデルを読み込んで使います。" +
+        isIOS ? "iOS Safari では「音声認識を有効化」が必須です" : "Safariでも自動採点を使うには",
+        intro +
+          "ブラウザ内で動く小型のWhisperモデルを読み込んで使います。" +
           "初回のみ約40MBをダウンロードします（次回以降はブラウザにキャッシュされます）。",
         true
       );
