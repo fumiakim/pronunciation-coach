@@ -490,19 +490,23 @@
   }
 
   // ----- Speech Recognition setup -----
-  // iOS / iPadOS Safari の webkitSpeechRecognition は実装が動作せず、
-  // start() 直後に error: "aborted" を発火する。試みても失敗し、UIに
-  // 誤った中途半端な結果が出るだけなので、iOS では SR 自体を無効化し
-  // 強制的に Whisper パスへ誘導する。
+  // iPadOS / iOS Safari の webkitSpeechRecognition は実装が動作せず、
+  // start() 直後に error: "aborted" を発火する。試みても失敗するだけ
+  // なので、iOS Safari のみ SR を無効化し Whisper パスへ誘導する。
+  // (iOS Chrome (CriOS) は Google 側の実装が別途動作するため SR を使う)
+  const skipNativeSR = isIOS && isSafari;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
-  if (SR && !isIOS) {
+  if (SR && !skipNativeSR) {
     recognition = new SR();
     recognition.lang = "en-US";
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 3;
   }
+  try {
+    console.log("[pcoach] SR:", { SR: !!SR, skipNativeSR, recognition: !!recognition });
+  } catch (_) {}
 
   // ----- Phrase navigation -----
   function currentPhrase() {
