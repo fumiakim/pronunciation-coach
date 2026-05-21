@@ -910,9 +910,12 @@
     els.record.classList.add("is-recording");
     els.recordIcon.textContent = "⏹";
     els.recordLabel.textContent = "停止";
+    const willUseWhisper = !recognition && (whisper.state === "ready" || whisper.state === "loading");
     setStatus(
       recognition
         ? "録音中… お手本通りに話してみてください。"
+        : willUseWhisper
+        ? "録音中… 停止後に Whisper で自動採点します。"
         : "録音中… (このブラウザでは自動採点はできません。録音後に聞き返して確認しましょう)",
       "recording"
     );
@@ -1367,13 +1370,20 @@
       });
     }
 
+    // Whisper が「読み込み済み or 読み込み中」と判断できるか
+    const whisperAvailable =
+      whisper.state === "ready" || whisper.state === "loading" || whisperPreviouslyLoaded;
+
     if (!recognition && !hasGetUserMedia) {
       setStatus("⚠️ このブラウザはマイク機能に対応していません。", "error");
       els.record.disabled = true;
       els.record.style.opacity = 0.5;
+    } else if (!recognition && whisperAvailable) {
+      // iOS Safari など SR 無効 + Whisper 利用可
+      setStatus("Whisperで自動採点します。「録音開始」してください。", "");
     } else if (!recognition) {
       setStatus(
-        "このブラウザの音声認識は使えません。上の「音声認識を有効化」を押すか、お手本との聞き比べモードで練習しましょう。",
+        "このブラウザの音声認識は使えません。上のバナーから「音声認識を有効化」を押して自動採点を有効にしてください。",
         ""
       );
     } else if (isSafari && !whisperPreviouslyLoaded) {
