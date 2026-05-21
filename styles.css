@@ -260,10 +260,13 @@ button { font-family: inherit; }
 .status-bar.success { color: var(--good); }
 .status-bar.recording { color: var(--warn); }
 
-/* Result card */
+/* Result card — compact */
+.result-card { padding: 14px 18px; }
+.result-card .card-head { margin-bottom: 6px; }
+
 .result-grid {
   display: grid;
-  gap: 18px;
+  gap: 10px;
   grid-template-columns: 1fr;
 }
 
@@ -273,8 +276,8 @@ button { font-family: inherit; }
 }
 
 .result-block h3 {
-  margin: 0 0 8px;
-  font-size: 12px;
+  margin: 0 0 4px;
+  font-size: 11px;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -283,32 +286,32 @@ button { font-family: inherit; }
 
 .heard-text {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.4;
   color: #fff;
-  padding: 12px 14px;
+  padding: 7px 12px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: 10px;
-  min-height: 56px;
+  min-height: 36px;
 }
 
 .word-diff {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 8px;
-  padding: 12px 14px;
+  gap: 4px 6px;
+  padding: 7px 12px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: 10px;
-  min-height: 56px;
+  min-height: 36px;
   align-content: flex-start;
 }
 
 .word {
-  padding: 4px 9px;
+  padding: 3px 8px;
   border-radius: 6px;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   border: 1px solid transparent;
 }
@@ -344,15 +347,15 @@ button { font-family: inherit; }
 
 .tips-list {
   margin: 0;
-  padding: 12px 14px 12px 30px;
+  padding: 7px 12px 7px 26px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: 10px;
-  min-height: 56px;
+  min-height: 36px;
 }
 .tips-list li {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--text);
 }
 .tips-list li + li { margin-top: 5px; }
@@ -923,8 +926,8 @@ button { font-family: inherit; }
 /* Playback row */
 .playback-row {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 6px;
   flex-wrap: wrap;
 }
 .playback-row.hidden { display: none; }
