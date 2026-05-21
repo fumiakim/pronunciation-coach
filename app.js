@@ -489,6 +489,17 @@
     // SR が結果を返した場合はそのまま終了
     if (state.audioGotResult) return;
 
+    // Whisper がまだ読込中なら完了を待つ (バックグラウンドで進行中の
+    // ロードが終われば自動採点に使える)
+    if (whisper.state === "loading" && whisper.loadPromise) {
+      setStatus("Whisper モデル読込待ち…", "recording");
+      try {
+        await whisper.loadPromise;
+      } catch (e) {
+        console.warn("Whisper load failed during finalize:", e);
+      }
+    }
+
     // Whisper が使える環境なら自動で解析
     if (whisper.state === "ready") {
       // フリーズと重い処理を区別できるよう経過秒数を表示
@@ -927,6 +938,12 @@
     }
     stopMediaRecording();
     stopTracking("rec");
+    // SR が無い環境 (iOS Safari など) では onEnd が発火しないため、
+    // ここで明示的に UI を「録音開始」状態へ戻す。
+    state.isRecording = false;
+    els.record.classList.remove("is-recording");
+    els.recordIcon.textContent = "🎤";
+    els.recordLabel.textContent = "録音開始";
   }
 
   function onResult(event) {
