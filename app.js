@@ -312,11 +312,13 @@
       // ONNX Runtime のWASMをCDNから取得
       env.allowLocalModels = false;
       // iOS Safari は cross-origin isolation (COOP/COEP) を要求するスレッド
-      // 実装が動かないため、単一スレッドWASMに固定する。これがないと推論が
-      // 「Whisperで解析中…」のまま戻ってこない事例がある。
+      // 実装が動かないため、numThreads=1 の単一スレッドWASMに固定する。
+      // ただし numThreads=1 + proxy=false にするとメインスレッドで推論が走り
+      // ページが完全にフリーズするため、proxy=true で Worker に推論を逃がす。
+      // (UI が止まらず、タイマーや進捗表示も正しく更新される)
       if (env.backends && env.backends.onnx && env.backends.onnx.wasm) {
         env.backends.onnx.wasm.numThreads = 1;
-        env.backends.onnx.wasm.proxy = false;
+        env.backends.onnx.wasm.proxy = true;
       }
       console.log("[whisper] env config:", env.backends && env.backends.onnx ? env.backends.onnx.wasm : "n/a");
 
