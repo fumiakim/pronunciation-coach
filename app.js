@@ -303,6 +303,7 @@
     setWhisperProgress(2, "ライブラリ読込中...");
 
     whisper.loadPromise = (async () => {
+      console.log("[whisper] importing transformers.js…");
       // transformers.js (ESM) を動的に読み込む
       const mod = await import(
         "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2"
@@ -310,6 +311,14 @@
       const { pipeline, env } = mod;
       // ONNX Runtime のWASMをCDNから取得
       env.allowLocalModels = false;
+      // iOS Safari は cross-origin isolation (COOP/COEP) を要求するスレッド
+      // 実装が動かないため、単一スレッドWASMに固定する。これがないと推論が
+      // 「Whisperで解析中…」のまま戻ってこない事例がある。
+      if (env.backends && env.backends.onnx && env.backends.onnx.wasm) {
+        env.backends.onnx.wasm.numThreads = 1;
+        env.backends.onnx.wasm.proxy = false;
+      }
+      console.log("[whisper] env config:", env.backends && env.backends.onnx ? env.backends.onnx.wasm : "n/a");
 
       setWhisperProgress(5, "モデル読込中...");
       whisper.pipe = await pipeline(
@@ -326,6 +335,7 @@
           },
         }
       );
+      console.log("[whisper] pipeline ready");
 
       setWhisperProgress(100, "✓ 完了");
       whisper.state = "ready";
@@ -362,6 +372,7 @@
 
   // MediaRecorder の blob → Whisper 入力用 Float32Array (16kHz mono)
   async function blobToWhisperInput(blob) {
+    console.log("[whisper] decoding blob:", blob.type, blob.size, "bytes");
     const arrayBuffer = await blob.arrayBuffer();
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioCtx();
@@ -371,6 +382,7 @@
     } finally {
       try { audioCtx.close(); } catch (_) {}
     }
+    console.log("[whisper] decoded:", decoded.duration.toFixed(2), "s @", decoded.sampleRate, "Hz");
     const targetRate = 16000;
     const frames = Math.max(1, Math.ceil(decoded.duration * targetRate));
     const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
@@ -380,13 +392,30 @@
     src.connect(offline.destination);
     src.start(0);
     const resampled = await offline.startRendering();
-    return resampled.getChannelData(0);
+    const data = resampled.getChannelData(0);
+    console.log("[whisper] resampled to 16kHz mono:", data.length, "samples");
+    return data;
+  }
+
+  function withTimeout(promise, ms, label) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error((label || "operation") + " timed out (" + ms + "ms)")), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
 
   async function transcribeWithWhisper(blob) {
     const pipe = await loadWhisper();
-    const input = await blobToWhisperInput(blob);
-    const out = await pipe(input, { language: "english", task: "transcribe" });
+    const input = await withTimeout(blobToWhisperInput(blob), 20_000, "audio decode");
+    console.log("[whisper] running inference…");
+    const t0 = performance.now();
+    const out = await withTimeout(
+      pipe(input, { language: "english", task: "transcribe" }),
+      90_000,
+      "whisper inference"
+    );
+    console.log("[whisper] inference done in", Math.round(performance.now() - t0), "ms");
     return (out && out.text ? out.text : "").trim();
   }
 
@@ -460,7 +489,13 @@
 
     // Whisper が使える環境なら自動で解析
     if (whisper.state === "ready") {
-      setStatus("Whisperで解析中…", "recording");
+      // フリーズと重い処理を区別できるよう経過秒数を表示
+      let elapsedSec = 0;
+      setStatus("Whisperで解析中… 0s (最大90s)", "recording");
+      const tickId = setInterval(() => {
+        elapsedSec++;
+        setStatus(`Whisperで解析中… ${elapsedSec}s (最大90s)`, "recording");
+      }, 1000);
       try {
         const text = await transcribeWithWhisper(blob);
         if (text) {
@@ -471,6 +506,8 @@
       } catch (e) {
         console.error("Whisper transcription failed:", e);
         setStatus("Whisper解析に失敗: " + (e.message || e), "error");
+      } finally {
+        clearInterval(tickId);
       }
     }
 
