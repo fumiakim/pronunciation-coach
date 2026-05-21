@@ -433,6 +433,91 @@
   let mediaRecorder = null;
   let audioChunks = [];
 
+  // ----- Voice Activity Detection (auto-stop on silence) -----
+  // ネイティブ SR が無い環境 (iPad Safari 等) では、SR の onEnd 相当の
+  // 自動停止が無くユーザーが毎回手動で停止する必要がある。Web Audio API
+  // で RMS を監視し、発話開始 → 無音1.5秒 で自動停止する。
+  const VAD_SAMPLE_MS = 100;
+  const VAD_SPEECH_RMS = 0.012;     // これを超えたら発話とみなす
+  const VAD_SILENCE_MS = 1500;      // 発話後の無音が続いた時間で停止
+  const VAD_MAX_RECORDING_MS = 30000; // 安全装置: 最大30秒で強制停止
+  const VAD_MIN_SPEECH_MS = 300;    // 最低この時間は録音継続
+
+  let vadCtx = null;
+  let vadAnalyser = null;
+  let vadBuffer = null;
+  let vadIntervalId = null;
+  let vadStartTime = 0;
+  let vadLastSpeechAt = 0;
+  let vadSpeechDetected = false;
+
+  function startVAD(stream) {
+    try {
+      stopVAD();
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      vadCtx = new AudioCtx();
+      const source = vadCtx.createMediaStreamSource(stream);
+      vadAnalyser = vadCtx.createAnalyser();
+      vadAnalyser.fftSize = 512;
+      source.connect(vadAnalyser);
+      vadBuffer = new Float32Array(vadAnalyser.fftSize);
+      vadStartTime = Date.now();
+      vadLastSpeechAt = 0;
+      vadSpeechDetected = false;
+      vadIntervalId = setInterval(vadTick, VAD_SAMPLE_MS);
+      console.log("[vad] started");
+    } catch (e) {
+      console.warn("[vad] failed to start:", e);
+      stopVAD();
+    }
+  }
+
+  function vadTick() {
+    if (!vadAnalyser || !vadBuffer) return;
+    vadAnalyser.getFloatTimeDomainData(vadBuffer);
+    let sum = 0;
+    for (let i = 0; i < vadBuffer.length; i++) sum += vadBuffer[i] * vadBuffer[i];
+    const rms = Math.sqrt(sum / vadBuffer.length);
+    const now = Date.now();
+
+    if (rms > VAD_SPEECH_RMS) {
+      vadSpeechDetected = true;
+      vadLastSpeechAt = now;
+    }
+
+    // 発話後の無音時間で自動停止
+    if (vadSpeechDetected && vadLastSpeechAt > 0) {
+      const sinceStart = now - vadStartTime;
+      const sinceLastSpeech = now - vadLastSpeechAt;
+      if (sinceLastSpeech > VAD_SILENCE_MS && sinceStart > VAD_MIN_SPEECH_MS) {
+        console.log("[vad] auto-stop: silence", sinceLastSpeech, "ms");
+        stopVAD();
+        if (state.isRecording) stopRecording();
+        return;
+      }
+    }
+
+    // 安全装置: 最大録音時間で強制停止
+    if (now - vadStartTime > VAD_MAX_RECORDING_MS) {
+      console.log("[vad] auto-stop: max duration reached");
+      stopVAD();
+      if (state.isRecording) stopRecording();
+    }
+  }
+
+  function stopVAD() {
+    if (vadIntervalId) {
+      clearInterval(vadIntervalId);
+      vadIntervalId = null;
+    }
+    if (vadCtx) {
+      try { vadCtx.close(); } catch (_) {}
+      vadCtx = null;
+    }
+    vadAnalyser = null;
+    vadBuffer = null;
+  }
+
   async function startMediaRecording() {
     if (!hasGetUserMedia) {
       throw new Error("このブラウザは getUserMedia に対応していません。");
@@ -459,11 +544,16 @@
           try { mediaStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
           mediaStream = null;
         }
+        stopVAD();
         finalizeAudio();
       });
       // 500ms ごとに dataavailable を発火させて、最後の flush をロストしても
       // チャンクが手元に残るようにする (SR 自動終了パスの安定性向上)
       mediaRecorder.start(500);
+
+      // ネイティブ SR が無い環境 (iPad Safari など) では SR の自動停止が
+      // 効かないため、VAD で無音検出して停止する。
+      if (!recognition) startVAD(mediaStream);
     }
   }
 
@@ -933,8 +1023,8 @@
       recognition
         ? "録音中… お手本通りに話してみてください。"
         : willUseWhisper
-        ? "録音中… 停止後に Whisper で自動採点します。"
-        : "録音中… (このブラウザでは自動採点はできません。録音後に聞き返して確認しましょう)",
+        ? "録音中… 話し終わると自動停止し Whisper で採点します。"
+        : "録音中… 話し終わると自動停止します。お手本と聞き比べてみましょう。",
       "recording"
     );
   }
@@ -943,6 +1033,7 @@
     if (recognition) {
       try { recognition.stop(); } catch (_) {}
     }
+    stopVAD();
     stopMediaRecording();
     stopTracking("rec");
     // SR が無い環境 (iOS Safari など) では onEnd が発火しないため、
