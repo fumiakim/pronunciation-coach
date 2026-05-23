@@ -687,6 +687,28 @@
       : 0;
     state.custom = null;
     renderPhrase();
+    // 初回ロードおよびカテゴリ切替時にもお手本音声を自動再生
+    speakWhenReady(currentPhrase().en);
+  }
+
+  // 音声合成の voices は非同期で読み込まれるため、空なら voiceschanged を待つ
+  function speakWhenReady(text) {
+    if (!("speechSynthesis" in window)) return;
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+      speak(text);
+      return;
+    }
+    const handler = () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", handler);
+      speak(text);
+    };
+    window.speechSynthesis.addEventListener("voiceschanged", handler);
+    // フォールバック: 1秒後にイベントが来なくても発火を試みる
+    setTimeout(() => {
+      window.speechSynthesis.removeEventListener("voiceschanged", handler);
+      speak(text);
+    }, 1000);
   }
 
   function step(dir) {
