@@ -1025,9 +1025,45 @@
   }
 
   // ----- Recognition handlers -----
+  // 録音開始の合図ビープ (Web Audio API)
+  // MediaRecorder 起動前に完全に鳴らし終えるため、Promise で完了を待つ
+  function playStartBeep() {
+    return new Promise((resolve) => {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return resolve();
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.value = 880; // A5
+        const t0 = ctx.currentTime;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.22, t0 + 0.01);
+        gain.gain.linearRampToValueAtTime(0, t0 + 0.13);
+        osc.start(t0);
+        osc.stop(t0 + 0.14);
+        osc.onended = () => {
+          try { ctx.close(); } catch (_) {}
+          resolve();
+        };
+        // フォールバック: onended が来ない環境のため 250ms で resolve
+        setTimeout(resolve, 250);
+      } catch (e) {
+        console.warn("[beep] failed:", e);
+        resolve();
+      }
+    });
+  }
+
   async function startRecording() {
     state.audioGotResult = false;
     els.playbackRow.classList.add("hidden");
+
+    // 録音開始の合図ビープを鳴らしてから録音開始 (マイクが拾わないように)
+    await playStartBeep();
 
     // 1) まずマイク権限と録音ストリームを取得 (Safari の SR より先に getUserMedia)
     try {
