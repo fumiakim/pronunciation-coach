@@ -648,83 +648,87 @@ button { font-family: inherit; }
   height: 0;
 }
 
-/* Study Time */
-.study-card .card-head { flex-wrap: wrap; gap: 10px; }
-.study-today {
-  display: inline-flex;
-  align-items: center;
+/* Study Time — shadowing-app の DailyTimer に揃えたピル形式 */
+.study-card { padding: 12px 16px; }
+.study-card .card-head {
   flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 0;
+  align-items: center;
+}
+.study-card .card-head h2 {
+  display: flex;
+  align-items: center;
   gap: 6px;
+}
+.study-card .card-head h2::before {
+  content: "🎧";
   font-size: 13px;
-  font-variant-numeric: tabular-nums;
+  filter: grayscale(0.2);
+  opacity: 0.85;
 }
-.study-today-label { color: var(--text-dim); }
-.study-today-pron { color: var(--accent); font-weight: 600; }
-.study-today-shad { color: var(--accent-2); font-weight: 600; }
-.study-today-total {
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  padding: 3px 10px;
-  border-radius: 999px;
-  color: var(--text);
-  font-weight: 700;
-}
-.study-sep { color: var(--muted); }
 
 .study-strip {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  align-items: end;
-  margin-top: 4px;
-  padding: 10px 4px 6px;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
+.study-strip::-webkit-scrollbar { height: 4px; }
+.study-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
 .study-day {
+  flex-shrink: 0;
+  min-width: 52px;
+  padding: 4px 8px;
+  text-align: center;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 1px;
 }
-.study-bar {
-  width: 100%;
-  height: 76px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column-reverse;
-  overflow: hidden;
+.study-day.has-activity {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--border);
 }
-.study-bar-pron, .study-bar-shad {
-  width: 100%;
-  transition: height 0.3s ease;
-}
-.study-bar-shad { background: linear-gradient(180deg, #4cd4b0, #2fa885); }
-.study-bar-pron { background: linear-gradient(180deg, #7c5cff, #5544ff); }
-.study-day.today .study-bar {
-  border-color: rgba(124, 92, 255, 0.55);
-  box-shadow: 0 0 0 1px rgba(124, 92, 255, 0.35);
+.study-day.today {
+  background: linear-gradient(135deg, #7c5cff, #5544ff);
+  border-color: transparent;
+  color: #fff;
 }
 .study-day-label {
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1;
   color: var(--text-dim);
-  text-align: center;
   font-variant-numeric: tabular-nums;
 }
-.study-day.today .study-day-label { color: var(--text); font-weight: 600; }
+.study-day.today .study-day-label { color: rgba(255,255,255,0.8); }
+.study-day.has-activity .study-day-label { color: var(--text-dim); }
 .study-day-time {
-  font-size: 10px;
-  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--muted);
 }
+.study-day.has-activity .study-day-time { color: var(--text); }
+.study-day.today .study-day-time { color: #fff; }
 
 .study-note {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   font-size: 11px;
   color: var(--muted);
   line-height: 1.5;
 }
-
 /* ── Bucket / pairing settings ───────────────────────────────── */
 .bucket-settings-mount {
   position: relative;

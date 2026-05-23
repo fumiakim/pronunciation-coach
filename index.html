@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pronunciation Coach — 英語発音矯正</title>
-<link rel="stylesheet" href="styles.css?v=20260521o" />
+<link rel="stylesheet" href="styles.css?v=20260521p" />
 </head>
 <body>
   <header class="topbar">
@@ -181,18 +181,10 @@
     <section class="card study-card">
       <div class="card-head">
         <h2>学習時間</h2>
-        <div class="study-today" id="studyToday">
-          <span class="study-today-label">今日:</span>
-          <span class="study-today-pron" id="studyTodayPron">発音 0:00</span>
-          <span class="study-sep">+</span>
-          <span class="study-today-shad" id="studyTodayShad">シャドーイング 0:00</span>
-          <span class="study-sep">=</span>
-          <span class="study-today-total" id="studyTodayTotal">合計 0:00</span>
+        <div class="study-strip" id="studyStrip" aria-label="直近7日間の学習時間 (発音 + シャドーイング)">
+          <span class="muted">読み込み中…</span>
         </div>
         <div class="bucket-settings-mount" id="bucketSettings"></div>
-      </div>
-      <div class="study-strip" id="studyStrip">
-        <span class="muted">読み込み中…</span>
       </div>
       <p class="study-note" id="studyNote">
         ※ シャドーイング時間と発音時間はクラウドに集約されます。複数の端末で集計するには、右の <strong>⚙</strong> から UUID をコピーして他端末に貼り付けてください。
@@ -229,13 +221,13 @@
     <p>※ Chrome / Edge / Safari の最新版を推奨。マイクの使用許可が必要です。</p>
   </footer>
 
-  <script src="bucket-id.js?v=20260521o"></script>
-  <script src="cloud-sync-client.js?v=20260521o"></script>
-  <script src="bucket-settings.js?v=20260521o"></script>
-  <script src="phonemes.js?v=20260521o"></script>
-  <script src="audio-features.js?v=20260521o"></script>
-  <script src="reference-contour.js?v=20260521o"></script>
-  <script src="phrases.js?v=20260521o"></script>
-  <script src="app.js?v=20260521o"></script>
+  <script src="bucket-id.js?v=20260521p"></script>
+  <script src="cloud-sync-client.js?v=20260521p"></script>
+  <script src="bucket-settings.js?v=20260521p"></script>
+  <script src="phonemes.js?v=20260521p"></script>
+  <script src="audio-features.js?v=20260521p"></script>
+  <script src="reference-contour.js?v=20260521p"></script>
+  <script src="phrases.js?v=20260521p"></script>
+  <script src="app.js?v=20260521p"></script>
 </body>
 </html>

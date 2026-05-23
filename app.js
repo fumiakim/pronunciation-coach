@@ -71,9 +71,6 @@
     playModel: $("playModelBtn"),
     phraseIndex: $("phraseIndex"),
     studyStrip: $("studyStrip"),
-    studyTodayPron: $("studyTodayPron"),
-    studyTodayShad: $("studyTodayShad"),
-    studyTodayTotal: $("studyTodayTotal"),
     analysisCard: $("analysisCard"),
     analysisMeta: $("analysisMeta"),
     phonemeStrip: $("phonemeStrip"),
@@ -153,56 +150,44 @@
   function startTracking(key) { activeSources.add(key); startTickIfNeeded(); }
   function stopTracking(key) { activeSources.delete(key); stopTickIfIdle(); }
 
+  // shadowing-app の DailyTimer に揃えた 7日分のピル形式描画
   function renderStudyTime() {
     const days = getLastNDays(7);
-    let maxTotal = 0;
-    days.forEach((d) => { maxTotal = Math.max(maxTotal, d.pron + d.shad); });
-    const scaleMax = Math.max(maxTotal, 5 * 60); // 最低5分でスケール、過小な日でも見栄えを保つ
-
     els.studyStrip.innerHTML = "";
-    const todayKey = dayKey(PRON_PREFIX); // 比較用
     days.forEach((d, idx) => {
-      const isToday = idx === days.length - 1;
+      const lastIdx = days.length - 1;
+      const isToday = idx === lastIdx;
+      const isYesterday = idx === lastIdx - 1;
       const total = d.pron + d.shad;
-      const pronH = scaleMax > 0 ? (d.pron / scaleMax) * 100 : 0;
-      const shadH = scaleMax > 0 ? (d.shad / scaleMax) * 100 : 0;
-      const wrap = document.createElement("div");
-      wrap.className = "study-day" + (isToday ? " today" : "");
 
-      const bar = document.createElement("div");
-      bar.className = "study-bar";
-      const pron = document.createElement("div");
-      pron.className = "study-bar-pron";
-      pron.style.height = pronH + "%";
-      const shad = document.createElement("div");
-      shad.className = "study-bar-shad";
-      shad.style.height = shadH + "%";
-      // 重なり順: 下に shad、上に pron
-      bar.appendChild(shad);
-      bar.appendChild(pron);
+      const wrap = document.createElement("div");
+      let cls = "study-day";
+      if (isToday) cls += " today";
+      else if (total > 0) cls += " has-activity";
+      wrap.className = cls;
 
       const dayLabel = document.createElement("div");
       dayLabel.className = "study-day-label";
-      dayLabel.textContent = isToday ? "今日" : (d.date.getMonth() + 1) + "/" + d.date.getDate();
+      dayLabel.textContent = isToday
+        ? "今日"
+        : isYesterday
+        ? "昨日"
+        : (d.date.getMonth() + 1) + "/" + d.date.getDate();
+
       const timeLabel = document.createElement("div");
       timeLabel.className = "study-day-time";
       timeLabel.textContent = total > 0 ? formatShort(total) : "—";
 
-      bar.title = d.date.toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" }) +
-        " — 発音 " + formatShort(d.pron) + " + シャドーイング " + formatShort(d.shad) +
+      wrap.title =
+        d.date.toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" }) +
+        " — シャドーイング " + formatShort(d.shad) +
+        " + 発音 " + formatShort(d.pron) +
         " = " + formatShort(total);
 
-      wrap.appendChild(bar);
       wrap.appendChild(dayLabel);
       wrap.appendChild(timeLabel);
       els.studyStrip.appendChild(wrap);
     });
-
-    const todayPron = getDaySeconds(PRON_PREFIX);
-    const todayShad = getDaySeconds(SHAD_PREFIX);
-    els.studyTodayPron.textContent = "発音 " + formatShort(todayPron);
-    els.studyTodayShad.textContent = "シャドーイング " + formatShort(todayShad);
-    els.studyTodayTotal.textContent = "合計 " + formatShort(todayPron + todayShad);
   }
 
   // 他タブ・他アプリ (同一オリジン) からの更新でも再描画
