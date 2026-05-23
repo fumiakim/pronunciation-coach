@@ -114,6 +114,18 @@ button { font-family: inherit; }
 .target-card { padding: 14px 18px; }
 .target-card .card-head { margin-bottom: 6px; }
 
+.target-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+.target-nav .btn-nav {
+  padding: 4px 12px;
+  font-size: 14px;
+  min-width: 44px;
+}
+
 .phrase-index {
   font-size: 11px;
   color: var(--text-dim);

@@ -7,7 +7,7 @@
     index: 0,
     phrases: window.PHRASES.intermediate,
     isRecording: false,
-    rate: 0.9,
+    rate: 0.7,
     history: [],
     custom: null, // {en, ja, hint}
     lastAudioUrl: null, // 録音した自分の声 (Blob URL)
@@ -42,7 +42,6 @@
     custom: $("customBtn"),
     prev: $("prevBtn"),
     next: $("nextBtn"),
-    shuffle: $("shuffleBtn"),
     levelSelect: $("levelSelect"),
     rateSlider: $("rateSlider"),
     rateValue: $("rateValue"),
@@ -694,17 +693,8 @@
     if (state.custom) state.custom = null;
     state.index = (state.index + dir + state.phrases.length) % state.phrases.length;
     renderPhrase();
-  }
-
-  function shuffle() {
-    if (state.custom) state.custom = null;
-    if (state.phrases.length <= 1) return;
-    let next;
-    do {
-      next = Math.floor(Math.random() * state.phrases.length);
-    } while (next === state.index);
-    state.index = next;
-    renderPhrase();
+    // フレーズ移動時は自動でお手本を再生
+    speak(currentPhrase().en);
   }
 
   // ----- TTS (model audio) -----
@@ -1392,7 +1382,6 @@
 
   els.prev.addEventListener("click", () => step(-1));
   els.next.addEventListener("click", () => step(1));
-  els.shuffle.addEventListener("click", shuffle);
 
   els.levelSelect.addEventListener("change", (e) => setLevel(e.target.value));
 

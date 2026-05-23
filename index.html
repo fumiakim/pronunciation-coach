@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pronunciation Coach — 英語発音矯正</title>
-<link rel="stylesheet" href="styles.css?v=20260521l" />
+<link rel="stylesheet" href="styles.css?v=20260521m" />
 </head>
 <body>
   <header class="topbar">
@@ -26,8 +26,8 @@
       </label>
       <label class="select-wrap">
         <span>音声速度</span>
-        <input type="range" id="rateSlider" min="0.5" max="1.2" step="0.05" value="0.9" />
-        <span class="rate-value" id="rateValue">0.90x</span>
+        <input type="range" id="rateSlider" min="0.5" max="1.2" step="0.05" value="0.7" />
+        <span class="rate-value" id="rateValue">0.70x</span>
       </label>
     </div>
   </header>
@@ -56,11 +56,6 @@
     <section class="card target-card">
       <div class="card-head">
         <h2>練習フレーズ <span class="phrase-index" id="phraseIndex"></span></h2>
-        <div class="card-head-actions">
-          <button class="btn btn-ghost" id="prevBtn" title="前のフレーズ">◀</button>
-          <button class="btn btn-ghost" id="nextBtn" title="次のフレーズ">▶</button>
-          <button class="btn btn-ghost" id="shuffleBtn" title="シャッフル">🔀</button>
-        </div>
       </div>
 
       <div class="target-body">
@@ -88,6 +83,11 @@
 
       <div class="status-bar" id="statusBar">
         マイクをオンにして、お手本通りに発音してみましょう。
+      </div>
+
+      <div class="target-nav">
+        <button class="btn btn-ghost btn-nav" id="prevBtn" title="前のフレーズ">◀</button>
+        <button class="btn btn-ghost btn-nav" id="nextBtn" title="次のフレーズ">▶</button>
       </div>
     </section>
 
@@ -229,13 +229,13 @@
     <p>※ Chrome / Edge / Safari の最新版を推奨。マイクの使用許可が必要です。</p>
   </footer>
 
-  <script src="bucket-id.js?v=20260521l"></script>
-  <script src="cloud-sync-client.js?v=20260521l"></script>
-  <script src="bucket-settings.js?v=20260521l"></script>
-  <script src="phonemes.js?v=20260521l"></script>
-  <script src="audio-features.js?v=20260521l"></script>
-  <script src="reference-contour.js?v=20260521l"></script>
-  <script src="phrases.js?v=20260521l"></script>
-  <script src="app.js?v=20260521l"></script>
+  <script src="bucket-id.js?v=20260521m"></script>
+  <script src="cloud-sync-client.js?v=20260521m"></script>
+  <script src="bucket-settings.js?v=20260521m"></script>
+  <script src="phonemes.js?v=20260521m"></script>
+  <script src="audio-features.js?v=20260521m"></script>
+  <script src="reference-contour.js?v=20260521m"></script>
+  <script src="phrases.js?v=20260521m"></script>
+  <script src="app.js?v=20260521m"></script>
 </body>
 </html>
