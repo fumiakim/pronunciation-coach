@@ -698,17 +698,30 @@
   function speak(text) {
     if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
+
+    // スライダーの最新値を直接参照 (state.rate が更新されていない事故を回避)
+    const sliderRate = els.rateSlider ? parseFloat(els.rateSlider.value) : null;
+    const rate = isFinite(sliderRate) && sliderRate > 0 ? sliderRate : state.rate;
+
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
-    utter.rate = state.rate;
+
     // Prefer a high-quality EN voice if available
     const voices = window.speechSynthesis.getVoices();
     const enVoices = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
     const preferred = enVoices.find((v) => /Google|Samantha|Natural|Microsoft/i.test(v.name));
     utter.voice = preferred || enVoices[0] || null;
+
+    // Safari は voice を設定した後に rate を入れる必要がある
+    // (voice 代入で rate がデフォルトに戻る挙動がある)
+    utter.rate = rate;
+    utter.pitch = 1.0;
+    utter.volume = 1.0;
+
     utter.onstart = () => startTracking("tts");
     utter.onend = () => stopTracking("tts");
     utter.onerror = () => stopTracking("tts");
+    console.log("[tts] speak rate=" + rate, "voice=" + (utter.voice && utter.voice.name));
     window.speechSynthesis.speak(utter);
   }
 
@@ -1370,10 +1383,16 @@
 
   els.levelSelect.addEventListener("change", (e) => setLevel(e.target.value));
 
-  els.rateSlider.addEventListener("input", (e) => {
-    state.rate = parseFloat(e.target.value);
-    els.rateValue.textContent = state.rate.toFixed(2) + "x";
-  });
+  // スライダー — input (ドラッグ中) と change (リリース時) の両方を拾い、
+  // iOS Safari のように input が遅延する環境でも反映を確実にする
+  function onRateChange(e) {
+    const v = parseFloat(e.target.value);
+    if (!isFinite(v)) return;
+    state.rate = v;
+    els.rateValue.textContent = v.toFixed(2) + "x";
+  }
+  els.rateSlider.addEventListener("input", onRateChange);
+  els.rateSlider.addEventListener("change", onRateChange);
 
   els.custom.addEventListener("click", () => {
     els.customModal.classList.remove("hidden");
