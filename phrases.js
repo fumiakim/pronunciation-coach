@@ -82,6 +82,86 @@ window.PHRASES = {
       ja: "トイレはどこですか？",
       hint: "bathroom の /θ/ は舌先を歯に。room の /r/ と /uː/ を丁寧に。",
     },
+    {
+      en: "It's raining outside.",
+      ja: "外は雨が降っている。",
+      hint: "raining /ˈreɪnɪŋ/ の /eɪ/、outside の /aʊ/ 二重母音をはっきり。",
+    },
+    {
+      en: "I don't know yet.",
+      ja: "まだわからない。",
+      hint: "don't know はリンクして「ドンノウ」のように。yet の /j/ は喉から。",
+    },
+    {
+      en: "Are you ready?",
+      ja: "準備できた？",
+      hint: "Are you はリンク「アーユ」。ready /ˈrɛdi/ の /r/ は舌を浮かせて。",
+    },
+    {
+      en: "I'll be right back.",
+      ja: "すぐに戻ります。",
+      hint: "I'll be はリンク「アイビ」。right /r/ と back /b/ の対比を意識。",
+    },
+    {
+      en: "Take your time.",
+      ja: "ゆっくりどうぞ。",
+      hint: "Take の /eɪ/、your は弱く「ヤ」。time の /aɪ/ 二重母音を長めに。",
+    },
+    {
+      en: "It doesn't matter.",
+      ja: "大したことじゃない。",
+      hint: "doesn't は「ダズン(ト)」、matter の /t/ はフラップ気味に「マラー」。",
+    },
+    {
+      en: "Don't worry about it.",
+      ja: "気にしないで。",
+      hint: "worry /ˈwɜːri/ の /wɜːr/、about it はリンク「アバウディッ」。",
+    },
+    {
+      en: "That's a good question.",
+      ja: "それはいい質問だ。",
+      hint: "That's の /ð/、question /ˈkwɛstʃən/ の /tʃ/ を意識。",
+    },
+    {
+      en: "I agree with you.",
+      ja: "同感です。",
+      hint: "agree /əˈɡriː/ は後ろ強勢で /iː/ を長く、with の /ð/ は有声。",
+    },
+    {
+      en: "Let me think about it.",
+      ja: "考えさせて。",
+      hint: "Let me はリンク「レッミ」。think の /θ/、about it もリンク。",
+    },
+    {
+      en: "I'm just kidding.",
+      ja: "冗談だよ。",
+      hint: "just の /dʒ/、kidding の /d/ は短く軽く、/ɪ/ は緊張させない。",
+    },
+    {
+      en: "Can I try this one?",
+      ja: "これを試してもいい？",
+      hint: "Can I はリンク「キャナイ」。try /tr/ クラスタ、this の /ð/。",
+    },
+    {
+      en: "What does it mean?",
+      ja: "どういう意味？",
+      hint: "What does it はリンク「ワッダズィッ」。mean /miːn/ の /iː/ を長く。",
+    },
+    {
+      en: "I'll do my best.",
+      ja: "全力を尽くします。",
+      hint: "I'll do はリンク「アイドゥ」。best の語末 /st/ クラスタを丁寧に。",
+    },
+    {
+      en: "Have a good weekend.",
+      ja: "良い週末を。",
+      hint: "Have a はリンク「ハバ」。weekend の強勢は前 /ˈwiːkend/。",
+    },
+    {
+      en: "See you later.",
+      ja: "またね。",
+      hint: "See you はリンク「シーユ」。later の /t/ はフラップ気味に「レイラー」。",
+    },
   ],
 
   intermediate: [
@@ -165,6 +245,86 @@ window.PHRASES = {
       ja: "ご親切に本当に感謝します。",
       hint: "appreciate /əˈpriːʃieɪt/ の強勢は2音節目。/r/ と /l/ に注意。",
     },
+    {
+      en: "Would you like something to drink?",
+      ja: "何か飲み物はいかがですか？",
+      hint: "Would you はリンク「ウッヂュ」。something to は「サムシントゥ」と滑らかに。",
+    },
+    {
+      en: "I'm in charge of the marketing team.",
+      ja: "マーケティングチームを担当しています。",
+      hint: "charge の /tʃ/、marketing の /r/ と /ŋ/ を意識。",
+    },
+    {
+      en: "How long have you been living here?",
+      ja: "ここに住んでどれくらいですか？",
+      hint: "How long, have you, been living のリンクを滑らかに。",
+    },
+    {
+      en: "Do you happen to know what time it is?",
+      ja: "今何時かわかりますか？",
+      hint: "happen to はリンク「ハプン(トゥ)」、what time it is も連続でリンク。",
+    },
+    {
+      en: "I'd rather walk than take the bus.",
+      ja: "バスに乗るより歩きたい。",
+      hint: "I'd rather はリンク「アイドラザー」、than の /ð/、walk の /ɔː/。",
+    },
+    {
+      en: "Could you give me a hand with this?",
+      ja: "これを手伝ってもらえますか？",
+      hint: "Could you はリンク「クッヂュ」。give me a もリンク「ギミマ」。",
+    },
+    {
+      en: "I'm planning to visit Kyoto next month.",
+      ja: "来月京都を訪れる予定です。",
+      hint: "planning の /pl/ クラスタ、visit /v/、month の /θ/ で締める。",
+    },
+    {
+      en: "She must be exhausted after the long trip.",
+      ja: "長旅で彼女は疲れているはず。",
+      hint: "exhausted /ɪɡˈzɔːstɪd/ の /ɡz/、after the trip のリズム。",
+    },
+    {
+      en: "Let's get together sometime next week.",
+      ja: "来週どこかで会いましょう。",
+      hint: "get together はリンク「ゲットゥゲザー」、together の /ð/。",
+    },
+    {
+      en: "I had no idea you were coming today.",
+      ja: "今日来るとは知らなかった。",
+      hint: "no idea は「ノアイディア」と繋ぐ。coming today を滑らかに。",
+    },
+    {
+      en: "We're running a bit behind schedule.",
+      ja: "少し予定より遅れています。",
+      hint: "running a bit はリンク「ラニンガビッ」。schedule は米 /ˈskedʒuːl/。",
+    },
+    {
+      en: "Could you please speak a little louder?",
+      ja: "もう少し大きな声で話してもらえますか？",
+      hint: "Could you please はリンク連発。louder /aʊ/ 二重母音を伸ばし気味に。",
+    },
+    {
+      en: "Have you finished your homework yet?",
+      ja: "宿題はもう終わった？",
+      hint: "Have you, finished your のリンク。yet で文を締める。",
+    },
+    {
+      en: "I really enjoyed talking with you.",
+      ja: "お話できてとても楽しかったです。",
+      hint: "enjoyed /ɪnˈdʒɔɪd/ の /dʒ/、with you はリンク「ウィッヂュ」。",
+    },
+    {
+      en: "The food here is absolutely delicious.",
+      ja: "ここの料理は本当に美味しい。",
+      hint: "absolutely /ˈæbsəluːtli/ の強勢は最初、delicious /dɪˈlɪʃəs/ の /ʃ/。",
+    },
+    {
+      en: "I'll send you the link in a minute.",
+      ja: "リンクをすぐ送ります。",
+      hint: "send you はリンク「センヂュ」、in a minute はリンク「イナミニッ」。",
+    },
   ],
 
   advanced: [
@@ -242,6 +402,76 @@ window.PHRASES = {
       en: "The negotiations reached an impasse last evening.",
       ja: "交渉は昨夜行き詰まりに達した。",
       hint: "negotiations /nɪˌɡoʊʃiˈeɪʃənz/、impasse /ˈɪmpæs/ の /æ/ を意識。",
+    },
+    {
+      en: "Despite the challenges, we managed to succeed.",
+      ja: "困難にもかかわらず成功できた。",
+      hint: "Despite の /ɪˈspaɪt/、challenges /ˈtʃælɪndʒɪz/ の /tʃ/ と /dʒ/。",
+    },
+    {
+      en: "The findings have profound implications for future research.",
+      ja: "調査結果は今後の研究に深い意味を持つ。",
+      hint: "profound /prəˈfaʊnd/、implications の長語強勢を維持。",
+    },
+    {
+      en: "We must address this issue with utmost urgency.",
+      ja: "この問題に最大の緊急性で取り組まねばならない。",
+      hint: "address (動詞) は後ろ強勢、urgency /ˈɜːrdʒənsi/ の /ɜːr/。",
+    },
+    {
+      en: "Her contributions have been instrumental to our success.",
+      ja: "彼女の貢献は我々の成功に不可欠だった。",
+      hint: "contributions /ˌkɑːntrɪˈbjuːʃənz/、instrumental の長語を区切らず流す。",
+    },
+    {
+      en: "The contract stipulates a six-month probationary period.",
+      ja: "契約は6ヶ月の試用期間を定めている。",
+      hint: "stipulates /ˈstɪpjuleɪts/、probationary /proʊˈbeɪʃəneri/ の強勢。",
+    },
+    {
+      en: "It's imperative that we reconsider our strategy.",
+      ja: "戦略を見直すことが不可欠だ。",
+      hint: "imperative /ɪmˈperətɪv/ の強勢は2音節目、reconsider の /r/ クラスタ。",
+    },
+    {
+      en: "The breakthrough was nothing short of extraordinary.",
+      ja: "その突破口はまさに驚異的なものだった。",
+      hint: "breakthrough の /θ/、extraordinary /ɪkˈstrɔːrdəneri/ の長語強勢。",
+    },
+    {
+      en: "We need to mitigate the risks before proceeding.",
+      ja: "進める前にリスクを軽減する必要がある。",
+      hint: "mitigate /ˈmɪtɪɡeɪt/、proceeding /prəˈsiːdɪŋ/ の /pr/ クラスタ。",
+    },
+    {
+      en: "The discrepancy was attributed to a clerical error.",
+      ja: "不一致は事務上のミスによるものとされた。",
+      hint: "discrepancy /dɪˈskrepənsi/、attributed の後ろ強勢を維持。",
+    },
+    {
+      en: "Their hospitality was beyond reproach.",
+      ja: "彼らのもてなしは申し分なかった。",
+      hint: "hospitality /ˌhɑːspɪˈtæləti/、reproach /rɪˈproʊtʃ/ の /tʃ/。",
+    },
+    {
+      en: "She delivered the keynote with remarkable poise.",
+      ja: "彼女は基調講演を見事に堂々と行った。",
+      hint: "keynote の /eɪ/、poise /pɔɪz/ の二重母音をはっきり。",
+    },
+    {
+      en: "The legislation will take effect on the first of January.",
+      ja: "法案は1月1日に施行される。",
+      hint: "legislation /ˌledʒɪˈsleɪʃən/ の強勢は3音節目、effect の /ɪˈfekt/。",
+    },
+    {
+      en: "We should expedite the approval process where possible.",
+      ja: "可能な限り承認プロセスを迅速化すべきだ。",
+      hint: "expedite /ˈekspədaɪt/、approval /əˈpruːvəl/ の /pr/ と /v/。",
+    },
+    {
+      en: "His thesis challenges conventional wisdom on the topic.",
+      ja: "彼の論文は通説に異議を唱えている。",
+      hint: "thesis /ˈθiːsɪs/ の /θ/、conventional の強勢は2音節目。",
     },
   ],
 
@@ -322,6 +552,76 @@ window.PHRASES = {
       ja: "彼は長い親指と確かな合計を持っている。",
       hint: "thumb /θʌm/ と sum /sʌm/、long /lɔːŋ/ と strong /strɔːŋ/。子音差を意識。",
     },
+    {
+      en: "She kept the cap on the cup near the cop.",
+      ja: "彼女は警官の近くにあるカップに帽子を被せた。",
+      hint: "cap /æ/, cup /ʌ/, cop /ɑː/。3つの母音を口の開きで区別。",
+    },
+    {
+      en: "The brown cow stood beside the brave crow.",
+      ja: "茶色い牛は勇敢なカラスのそばに立っていた。",
+      hint: "brown /aʊ/, cow /aʊ/, crow /oʊ/。二重母音を切替えて。",
+    },
+    {
+      en: "Please pull the pool tool out of the wool.",
+      ja: "ウールからプールの道具を引き出してください。",
+      hint: "pull /ʊ/, pool /uː/, tool /uː/, wool /ʊ/。長短対比。",
+    },
+    {
+      en: "I'd rather rate the radio than write to it.",
+      ja: "ラジオに書くより評価したい。",
+      hint: "rate /eɪ/, write /aɪ/。二重母音の開始位置を区別。",
+    },
+    {
+      en: "Buy a bye-bye toy for the boy.",
+      ja: "男の子にお別れのおもちゃを買ってあげて。",
+      hint: "buy /aɪ/, bye /aɪ/, toy /ɔɪ/, boy /ɔɪ/。/aɪ/ と /ɔɪ/ を区別。",
+    },
+    {
+      en: "The bear could barely bear the cold.",
+      ja: "クマは寒さにかろうじて耐えられた。",
+      hint: "bear と barely はいずれも /eər/ 系。/r/ 色を意識。",
+    },
+    {
+      en: "Choose the shoes that match the news.",
+      ja: "ニュースに合う靴を選んで。",
+      hint: "Choose /tʃuːz/, shoes /ʃuːz/, news /njuːz/。/tʃ/, /ʃ/ の使い分け。",
+    },
+    {
+      en: "The man can ban the can of bran.",
+      ja: "男はふすま缶を禁止できる。",
+      hint: "全部 /æ/。日本語の「ア」より口を強く横に開く音。",
+    },
+    {
+      en: "Press, please, prize a place to stay.",
+      ja: "押す、お願い、滞在する場所を高く評価する。",
+      hint: "/pr/ と /pl/ の連続。子音クラスタを丁寧に区切らず。",
+    },
+    {
+      en: "I sleep and creep into the deep keep.",
+      ja: "私は眠り、深い砦に這って入る。",
+      hint: "sleep, creep, deep, keep すべて /iː/。長母音を維持。",
+    },
+    {
+      en: "The hill was filled with little fillets.",
+      ja: "丘は小さなフィレ肉でいっぱいだった。",
+      hint: "hill, filled, little, fillets すべて /l/ と /ɪ/。緊張させない短母音。",
+    },
+    {
+      en: "Sell the cell phone in the cellar.",
+      ja: "地下室で携帯を売って。",
+      hint: "sell, cell, cellar すべて /sel/ 系。語末 /l/ をしっかり。",
+    },
+    {
+      en: "Wait, the weight on the waitstaff is great.",
+      ja: "待って、ウェイトスタッフへの重みは大きい。",
+      hint: "wait, weight, waitstaff, great すべて /eɪ/。二重母音を伸ばし気味に。",
+    },
+    {
+      en: "The dog dug a deep, dark ditch.",
+      ja: "犬は深く暗い溝を掘った。",
+      hint: "dog /ɔː/, dug /ʌ/, deep /iː/, dark /ɑːr/, ditch /ɪ/。母音バリエーション。",
+    },
   ],
 
   business: [
@@ -384,6 +684,61 @@ window.PHRASES = {
       en: "I'll forward you the email shortly.",
       ja: "すぐにメールを転送します。",
       hint: "forward /ˈfɔːrwərd/ の二つの /r/、shortly の /ʃ/。",
+    },
+    {
+      en: "Let's touch base before Friday.",
+      ja: "金曜までに連絡を取り合いましょう。",
+      hint: "touch /tʌtʃ/ の /tʃ/、base の /eɪ/ 二重母音。",
+    },
+    {
+      en: "I'm afraid I have to push back the meeting.",
+      ja: "申し訳ないですがミーティングを後ろ倒しに。",
+      hint: "afraid /əˈfreɪd/ の後ろ強勢、push back はリンクして滑らかに。",
+    },
+    {
+      en: "Can we move the deadline to next Monday?",
+      ja: "締切を来週月曜に移せますか？",
+      hint: "deadline の強勢は前 /ˈdedlaɪn/、move の /uː/ を長く。",
+    },
+    {
+      en: "I'd like to loop in the design team on this.",
+      ja: "この件にデザインチームを巻き込みたい。",
+      hint: "loop in はリンク「ルーピン」、design /dɪˈzaɪn/ の /z/ と /aɪ/。",
+    },
+    {
+      en: "We should align on the key deliverables.",
+      ja: "主要成果物について合意しましょう。",
+      hint: "align /əˈlaɪn/、deliverables の長語強勢は2音節目。",
+    },
+    {
+      en: "Could you walk me through the proposal?",
+      ja: "提案を順を追って説明してもらえますか？",
+      hint: "walk me はリンク「ウォークミ」、through の /θruː/。",
+    },
+    {
+      en: "I'll follow up with the client tomorrow.",
+      ja: "明日クライアントにフォローアップします。",
+      hint: "follow up はリンク「ファロウアップ」、client の /aɪ/。",
+    },
+    {
+      en: "We're on track to hit the quarterly target.",
+      ja: "四半期目標達成に向け順調です。",
+      hint: "on track はリンク「オントラック」、quarterly /ˈkwɔːrtərli/。",
+    },
+    {
+      en: "Let's take this offline.",
+      ja: "この話は別途しましょう。",
+      hint: "take this はリンク「テイクズィス」、offline の /ɔːf/。",
+    },
+    {
+      en: "The bandwidth is limited this week.",
+      ja: "今週は手いっぱいです。",
+      hint: "bandwidth /ˈbændwɪdθ/ の語末 /dθ/ クラスタが難所。",
+    },
+    {
+      en: "I appreciate the heads-up.",
+      ja: "事前に教えてくれてありがとう。",
+      hint: "heads-up はリンク「ヘッザップ」、appreciate の /priː/ を長く。",
     },
   ],
 
@@ -448,6 +803,61 @@ window.PHRASES = {
       ja: "このチケットの払い戻しはできますか？",
       hint: "refund (名) は前強勢 /ˈriːfʌnd/、ticket /ˈtɪkɪt/。",
     },
+    {
+      en: "What's the best way to get to the airport?",
+      ja: "空港までの最良の行き方は？",
+      hint: "What's the はリンク「ワッツザ」、airport の /eər/。",
+    },
+    {
+      en: "Could I have a window seat, please?",
+      ja: "窓側の席をお願いできますか？",
+      hint: "Could I はリンク「クッダイ」、window /ˈwɪndoʊ/ の /w/。",
+    },
+    {
+      en: "How long is the layover in Tokyo?",
+      ja: "東京での乗継時間はどれくらいですか？",
+      hint: "layover /ˈleɪoʊvər/ の二重母音2連発、Tokyo /ˈtoʊkjoʊ/。",
+    },
+    {
+      en: "Is there free Wi-Fi available here?",
+      ja: "ここで無料Wi-Fiは使えますか？",
+      hint: "Is there はリンク「イズザ」、available /əˈveɪləbəl/ の強勢は2音節目。",
+    },
+    {
+      en: "Do you have any vegetarian options?",
+      ja: "ベジタリアン向けの選択肢はありますか？",
+      hint: "vegetarian /ˌvedʒəˈteəriən/ の長語、強勢は3音節目。",
+    },
+    {
+      en: "I'd like to extend my stay by one night.",
+      ja: "1泊延長したい。",
+      hint: "extend /ɪkˈstend/、stay の /eɪ/、one night の /n/-/n/ リンク。",
+    },
+    {
+      en: "Could I get a wake-up call at seven?",
+      ja: "7時にモーニングコールをお願いできますか？",
+      hint: "wake-up はリンク「ウェイカップ」、seven の /v/。",
+    },
+    {
+      en: "Where can I find the souvenir shop?",
+      ja: "お土産屋はどこにありますか？",
+      hint: "souvenir /ˌsuːvəˈnɪər/ の強勢は3音節目、shop の /ʃ/。",
+    },
+    {
+      en: "Is this seat taken?",
+      ja: "この席は埋まっていますか？",
+      hint: "this seat はリンク、taken /ˈteɪkən/ の /eɪ/ を長く。",
+    },
+    {
+      en: "Could you take a picture for us?",
+      ja: "写真を撮ってもらえますか？",
+      hint: "take a はリンク「テイカ」、picture /ˈpɪktʃər/ の /tʃ/。",
+    },
+    {
+      en: "Is the tap water safe to drink?",
+      ja: "水道水は飲めますか？",
+      hint: "tap water はリンク「タップウォーター」、safe to は「セイフトゥ」。",
+    },
   ],
 
   "tongue-twisters": [
@@ -500,6 +910,51 @@ window.PHRASES = {
       en: "Betty bought a bit of better butter.",
       ja: "ベティはもう少しいいバターを少し買った。",
       hint: "/b/ と /t/ (flap T) の連続。butter は「バラー」に近い音。",
+    },
+    {
+      en: "Tongue twisters twist tongues that twirl.",
+      ja: "早口言葉はくるくる回る舌をねじる。",
+      hint: "/tw/, /tʃ/, /ŋ/ の組合せ。/tw/ クラスタを軽く速く。",
+    },
+    {
+      en: "Mary made many memorable mistakes Monday morning.",
+      ja: "メアリーは月曜の朝に多くの忘れがたい失敗をした。",
+      hint: "全部 /m/ で始まる。両唇をしっかり閉じて鼻に抜く。",
+    },
+    {
+      en: "I scream, you scream, we all scream for ice cream.",
+      ja: "私は叫ぶ、あなたも叫ぶ、みんなアイスを求めて叫ぶ。",
+      hint: "scream の /skr/ クラスタを連続。/aɪ/ を伸ばし気味に。",
+    },
+    {
+      en: "Big black bugs bleed blue-black blood.",
+      ja: "大きな黒い虫は青黒い血を流す。",
+      hint: "/b/ と /bl/ クラスタの連続。両唇破裂を明確に。",
+    },
+    {
+      en: "Lucky lucky lucky little Lucy.",
+      ja: "ラッキーラッキー、小さなルーシー。",
+      hint: "/l/ と /k/ の連続。/l/ の舌位置 (上歯茎) を維持しつつ。",
+    },
+    {
+      en: "Whistle for the thistle sifter.",
+      ja: "アザミふるい職人のために口笛を吹いて。",
+      hint: "/w/, /θ/, /s/ が混在。/θ/ と /s/ の切替えが鍵。",
+    },
+    {
+      en: "How can a clam cram in a clean cream can?",
+      ja: "蛤はどうやって清潔なクリーム缶に詰まれる？",
+      hint: "/cl/ と /cr/ クラスタを連続。/æ/ と /iː/ の母音差。",
+    },
+    {
+      en: "Knapsack straps.",
+      ja: "リュックのストラップ。",
+      hint: "/n/ (k は黙字), /ps/, /str/ の難しい子音クラスタ。",
+    },
+    {
+      en: "Black bug's blood.",
+      ja: "黒い虫の血。",
+      hint: "/bl/ クラスタ + /æ/ + /gz/ + /ʌ/。短いが密度の高い練習。",
     },
   ],
 };

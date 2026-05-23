@@ -70,6 +70,7 @@
     playbackRow: $("playbackRow"),
     playMyVoice: $("playMyVoiceBtn"),
     playModel: $("playModelBtn"),
+    phraseIndex: $("phraseIndex"),
     studyStrip: $("studyStrip"),
     studyTodayPron: $("studyTodayPron"),
     studyTodayShad: $("studyTodayShad"),
@@ -666,13 +667,25 @@
     els.target.textContent = p.en;
     els.translation.textContent = p.ja || "";
     els.hint.textContent = p.hint ? `💡 ${p.hint}` : "";
+    // 連番表示 (自由入力時はラベル変更)
+    if (els.phraseIndex) {
+      if (state.custom) {
+        els.phraseIndex.textContent = "自由入力";
+      } else {
+        els.phraseIndex.textContent =
+          (state.index + 1) + " / " + state.phrases.length;
+      }
+    }
     resetResults();
   }
 
   function setLevel(level) {
     state.level = level;
     state.phrases = window.PHRASES[level] || window.PHRASES.intermediate;
-    state.index = 0;
+    // カテゴリ切替時 (および初回ロード) はランダムな例文から始める
+    state.index = state.phrases.length > 0
+      ? Math.floor(Math.random() * state.phrases.length)
+      : 0;
     state.custom = null;
     renderPhrase();
   }

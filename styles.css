@@ -114,6 +114,20 @@ button { font-family: inherit; }
 .target-card { padding: 14px 18px; }
 .target-card .card-head { margin-bottom: 6px; }
 
+.phrase-index {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
 .card-head {
   display: flex;
   align-items: center;
