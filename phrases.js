@@ -327,6 +327,169 @@ window.PHRASES = {
     },
   ],
 
+  intermediate2: [
+    {
+      en: "If I had known, I would have come earlier.",
+      ja: "知っていたらもっと早く来たのに。",
+      hint: "If I had known はリンクして滑らかに。would have は「ウダブ」と短縮。",
+    },
+    {
+      en: "I used to play tennis when I was younger.",
+      ja: "若い頃はテニスをよくしていた。",
+      hint: "used to は「ユーストゥ」で /s/ 無声。younger /ˈjʌŋɡər/ の /ŋɡ/。",
+    },
+    {
+      en: "She might be interested in joining us.",
+      ja: "彼女も一緒に参加したいかもしれない。",
+      hint: "interested in はリンク「インタレスティディン」。joining の /dʒ/。",
+    },
+    {
+      en: "I'm thinking about changing my job soon.",
+      ja: "もうすぐ転職を考えています。",
+      hint: "thinking の /θ/ と /ŋ/、changing /ˈtʃeɪndʒɪŋ/ の /tʃ/ + /dʒ/。",
+    },
+    {
+      en: "Have you ever tried Indian food?",
+      ja: "インド料理を食べたことはありますか？",
+      hint: "Have you ever はリンク「ハヴユエヴァ」、tried の /tr/ クラスタ。",
+    },
+    {
+      en: "It's not as difficult as it looks.",
+      ja: "見た目ほど難しくない。",
+      hint: "difficult /ˈdɪfɪkəlt/ の3音節、as it はリンク「アズィッ」。",
+    },
+    {
+      en: "Could you do me a favor?",
+      ja: "お願いがあるのですが。",
+      hint: "Could you はリンク「クッヂュ」、do me a もリンク「ドゥミャ」。",
+    },
+    {
+      en: "I'm afraid I can't make it on Friday.",
+      ja: "残念ながら金曜は都合がつきません。",
+      hint: "I'm afraid I は「アムフレイダイ」と滑らかに、make it on は「メイキッタン」。",
+    },
+    {
+      en: "Would you mind closing the window?",
+      ja: "窓を閉めてもらえますか？",
+      hint: "Would you mind はリンク「ウッヂュマインド」。closing の /kl/ クラスタ。",
+    },
+    {
+      en: "I wish I could speak Spanish fluently.",
+      ja: "スペイン語が流暢に話せたらいいのに。",
+      hint: "I wish I could はリンク連発。fluently /ˈfluːəntli/ の /fl/ + /uː/。",
+    },
+    {
+      en: "We're supposed to meet at three.",
+      ja: "3時に会う約束です。",
+      hint: "supposed to は「サポーストゥ」で /d/ 弱化。three の /θr/ クラスタ。",
+    },
+    {
+      en: "I'd appreciate it if you let me know.",
+      ja: "教えていただけると助かります。",
+      hint: "appreciate it はリンク「アプリーシエイティッ」、let me は「レッミ」。",
+    },
+    {
+      en: "It looks like it's going to rain.",
+      ja: "雨が降りそうですね。",
+      hint: "It looks like はリンク「イッルックスライク」、going to は「ガナ」。",
+    },
+    {
+      en: "I'm getting used to the new schedule.",
+      ja: "新しいスケジュールに慣れてきた。",
+      hint: "getting used to は「ゲティンユーストゥ」、schedule 米 /ˈskedʒuːl/。",
+    },
+    {
+      en: "You should probably get some rest.",
+      ja: "少し休んだ方がいいよ。",
+      hint: "should probably は「シュッ(ド)プラブリ」、get some は「ゲッサム」。",
+    },
+    {
+      en: "I can't believe how fast time flies.",
+      ja: "時間が経つのが本当に早い。",
+      hint: "can't believe how はリンク。time flies の /aɪ/ 二重母音2連発。",
+    },
+    {
+      en: "Let's try to wrap this up by five.",
+      ja: "5時までに片付けましょう。",
+      hint: "wrap this up はリンク「ラップズィサップ」、by five の /aɪ/。",
+    },
+    {
+      en: "I'd rather stay home tonight.",
+      ja: "今夜は家にいたい。",
+      hint: "I'd rather はリンク「アイドラザー」、tonight の /aɪ/。",
+    },
+    {
+      en: "How about meeting up for coffee?",
+      ja: "コーヒー飲みに行きませんか？",
+      hint: "How about はリンク「ハバウ」、meeting up は「ミーティンアップ」。",
+    },
+    {
+      en: "I've been meaning to call you back.",
+      ja: "ずっと折返しの電話をしようと思っていた。",
+      hint: "meaning to call you back を一息で。call you は「コーリュー」。",
+    },
+    {
+      en: "It's pretty crowded around here on weekends.",
+      ja: "週末ここはかなり混んでいる。",
+      hint: "pretty crowded の /tr/ + /kr/、around here はリンク「アラウンヒア」。",
+    },
+    {
+      en: "We need to talk about the budget.",
+      ja: "予算について話し合う必要がある。",
+      hint: "talk about the はリンク「トーカバウザ」、budget /ˈbʌdʒɪt/ の /dʒ/。",
+    },
+    {
+      en: "I'm not really in the mood for that.",
+      ja: "今はそんな気分じゃない。",
+      hint: "in the mood for を一息で、that の /ð/ をはっきり。",
+    },
+    {
+      en: "She's been studying hard for the exam.",
+      ja: "彼女は試験のために熱心に勉強している。",
+      hint: "She's been はリンク「シーズビン」、studying hard の /st/ + /h/。",
+    },
+    {
+      en: "I don't think that's a good idea.",
+      ja: "それは良い考えだと思わない。",
+      hint: "don't think の /θ/、that's a good idea の /ð/ と /aɪ/。",
+    },
+    {
+      en: "Could you keep an eye on my bag?",
+      ja: "私のバッグを見ていてもらえますか？",
+      hint: "keep an eye on はリンク「キーパナイオン」。",
+    },
+    {
+      en: "What would you like to do tomorrow?",
+      ja: "明日は何をしたい？",
+      hint: "What would you はリンク「ワッ(ド)ヂュ」、like to do は「ライクトゥドゥ」。",
+    },
+    {
+      en: "I'm looking forward to the weekend.",
+      ja: "週末を楽しみにしている。",
+      hint: "looking forward to を一息で、forward の /r/ と弱形 to。",
+    },
+    {
+      en: "Things are going pretty well so far.",
+      ja: "今のところ順調に進んでいる。",
+      hint: "Things are はリンク「シングザー」、pretty well の /pr/ + /w/。",
+    },
+    {
+      en: "I'd love to hear more about it.",
+      ja: "もっと詳しく聞きたい。",
+      hint: "love to hear more はリンク連発、about it は「アバウディッ」。",
+    },
+    {
+      en: "Let me check my calendar first.",
+      ja: "まずカレンダーを確認させて。",
+      hint: "Let me check はリンク「レッミチェック」、calendar の /æ/。",
+    },
+    {
+      en: "It depends on the situation.",
+      ja: "状況によります。",
+      hint: "depends on the はリンク「ディペンズォンザ」、situation の強勢は3音節目。",
+    },
+  ],
+
   advanced: [
     {
       en: "The phenomenon was thoroughly analyzed by the researchers.",
