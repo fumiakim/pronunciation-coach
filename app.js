@@ -88,6 +88,8 @@
   // 表示時に両方を読み込み合算する。
   const PRON_PREFIX = "pronunciation-time-";
   const SHAD_PREFIX = "shadowing-time-";
+  const LIS_PREFIX = "listening-time-";
+  const VOCAB_PREFIX = "vocab-time-";
   const TICK_EVENT = "pronunciation:tick";
 
   function pad2(n) { return n < 10 ? "0" + n : "" + n; }
@@ -128,6 +130,8 @@
         date: d,
         pron: getDaySeconds(PRON_PREFIX, d),
         shad: getDaySeconds(SHAD_PREFIX, d),
+        lis: getDaySeconds(LIS_PREFIX, d),
+        vocab: getDaySeconds(VOCAB_PREFIX, d),
       });
     }
     return out;
@@ -158,7 +162,7 @@
       const lastIdx = days.length - 1;
       const isToday = idx === lastIdx;
       const isYesterday = idx === lastIdx - 1;
-      const total = d.pron + d.shad;
+      const total = d.pron + d.shad + (d.lis || 0) + (d.vocab || 0);
 
       const wrap = document.createElement("div");
       let cls = "study-day";
@@ -182,6 +186,8 @@
         d.date.toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" }) +
         " — シャドーイング " + formatShort(d.shad) +
         " + 発音 " + formatShort(d.pron) +
+        " + リスニング " + formatShort(d.lis || 0) +
+        " + 単語 " + formatShort(d.vocab || 0) +
         " = " + formatShort(total);
 
       wrap.appendChild(dayLabel);
@@ -193,7 +199,13 @@
   // 他タブ・他アプリ (同一オリジン) からの更新でも再描画
   window.addEventListener("storage", (e) => {
     if (!e.key) return;
-    if (e.key.startsWith(PRON_PREFIX) || e.key.startsWith(SHAD_PREFIX)) renderStudyTime();
+    if (
+      e.key.startsWith(PRON_PREFIX) ||
+      e.key.startsWith(SHAD_PREFIX) ||
+      e.key.startsWith(LIS_PREFIX) ||
+      e.key.startsWith(VOCAB_PREFIX)
+    )
+      renderStudyTime();
   });
 
   // ----- Cloud sync -----
@@ -245,18 +257,17 @@
       const days = await window.CloudSync.getRange(7);
       // クラウドの値が localStorage より大きい場合は更新 (逆は保持)。
       // 未送信のローカル差分が消えないようにする。
+      const mergeKey = (prefix, dateObj, dateStr, remoteVal) => {
+        const local = getDaySeconds(prefix, dateObj);
+        const merged = Math.max(local, remoteVal || 0);
+        if (merged !== local) localStorage.setItem(prefix + dateStr, String(merged));
+      };
       days.forEach((d) => {
         const dateObj = new Date(d.date + "T00:00:00");
-        const localPron = getDaySeconds(PRON_PREFIX, dateObj);
-        const localShad = getDaySeconds(SHAD_PREFIX, dateObj);
-        const mergedPron = Math.max(localPron, d.pron);
-        const mergedShad = Math.max(localShad, d.shad);
-        if (mergedPron !== localPron) {
-          localStorage.setItem(PRON_PREFIX + d.date, String(mergedPron));
-        }
-        if (mergedShad !== localShad) {
-          localStorage.setItem(SHAD_PREFIX + d.date, String(mergedShad));
-        }
+        mergeKey(PRON_PREFIX, dateObj, d.date, d.pron);
+        mergeKey(SHAD_PREFIX, dateObj, d.date, d.shad);
+        mergeKey(LIS_PREFIX, dateObj, d.date, d.lis);
+        mergeKey(VOCAB_PREFIX, dateObj, d.date, d.vocab);
       });
       renderStudyTime();
     } catch (e) {
