@@ -90,6 +90,7 @@
   const SHAD_PREFIX = "shadowing-time-";
   const LIS_PREFIX = "listening-time-";
   const VOCAB_PREFIX = "vocab-time-";
+  const GER_PREFIX = "german-time-";
   const TICK_EVENT = "pronunciation:tick";
 
   function pad2(n) { return n < 10 ? "0" + n : "" + n; }
@@ -132,6 +133,7 @@
         shad: getDaySeconds(SHAD_PREFIX, d),
         lis: getDaySeconds(LIS_PREFIX, d),
         vocab: getDaySeconds(VOCAB_PREFIX, d),
+        ger: getDaySeconds(GER_PREFIX, d),
       });
     }
     return out;
@@ -162,7 +164,7 @@
       const lastIdx = days.length - 1;
       const isToday = idx === lastIdx;
       const isYesterday = idx === lastIdx - 1;
-      const total = d.pron + d.shad + (d.lis || 0) + (d.vocab || 0);
+      const total = d.pron + d.shad + (d.lis || 0) + (d.vocab || 0) + (d.ger || 0);
 
       const wrap = document.createElement("div");
       let cls = "study-day";
@@ -188,6 +190,7 @@
         " + 発音 " + formatShort(d.pron) +
         " + リスニング " + formatShort(d.lis || 0) +
         " + 単語 " + formatShort(d.vocab || 0) +
+        " + ドイツ語 " + formatShort(d.ger || 0) +
         " = " + formatShort(total);
 
       wrap.appendChild(dayLabel);
@@ -268,6 +271,7 @@
         mergeKey(SHAD_PREFIX, dateObj, d.date, d.shad);
         mergeKey(LIS_PREFIX, dateObj, d.date, d.lis);
         mergeKey(VOCAB_PREFIX, dateObj, d.date, d.vocab);
+        mergeKey(GER_PREFIX, dateObj, d.date, d.ger);
       });
       renderStudyTime();
     } catch (e) {
